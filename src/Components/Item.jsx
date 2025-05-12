@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { FaShoppingCart } from 'react-icons/fa';
 import 'bootstrap/dist/css/bootstrap.min.css';
+import Popup from './Popup';
 
 const Item = ({ products }) => {
   const [cart, setCart] = useState([]);
+  const [showPopup,setShowPopup]=useState(false);
 
-  // Load cart from localStorage when the component mounts
   useEffect(() => {
     try {
       const savedCart = localStorage.getItem('cartList');
@@ -20,7 +21,6 @@ const Item = ({ products }) => {
     }
   }, []);
 
-  // Save the cart to localStorage whenever it changes
   useEffect(() => {
     try {
       if (cart.length > 0) {
@@ -34,6 +34,7 @@ const Item = ({ products }) => {
   const addToCart = (product) => {
     setCart((prevCart) => {
       const updatedCart = [...prevCart, product];
+      setShowPopup(true);
       return updatedCart;
     });
   };
@@ -44,6 +45,7 @@ const Item = ({ products }) => {
 
   return (
     <div className="container my-5">
+      {showPopup && <Popup title="Cart" message="Added to cart" onClose={()=>setShowPopup(!showPopup)} />}
       <h2 className="text-center mb-4 fw-bold">Featured Products</h2>
       <div className="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4">
         {products.map((product, index) => (
