@@ -1,13 +1,18 @@
-"use client"
+"use client";
+import { useAuth } from '@/app/AuthContext'; // Adjust if AuthContext is located elsewhere
+import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { AiFillEye, AiFillEyeInvisible } from 'react-icons/ai';
 
 export default function Login() {
+  const router = useRouter();
+  const { login } = useAuth();
+
   const [passwordVisible, setPasswordVisible] = useState(false);
   const [formData, setFormData] = useState({ username: '', password: '' });
 
   const togglePasswordVisibility = () => {
-    setPasswordVisible((prevState) => !prevState);
+    setPasswordVisible(prev => !prev);
   };
 
   const handleChange = (e) => {
@@ -16,7 +21,16 @@ export default function Login() {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    console.log(formData);
+
+    const dummyUser = {
+      name: formData.username,
+      role: "user"
+    };
+
+    login(dummyUser); 
+    localStorage.setItem("isLoggedIn",true);
+    localStorage.setItem("userName",formData.username);
+    router.push("/home"); 
   };
 
   return (

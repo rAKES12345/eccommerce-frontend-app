@@ -1,9 +1,20 @@
-import React from 'react'
+"use client";
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 
-const page = () => {
-  return (
-    <div>Home</div>
-  )
-}
+const Page = () => {
+  const router = useRouter();
 
-export default page
+  useEffect(() => {
+    const isLoggedIn = localStorage.getItem("isLoggedIn");
+    if (isLoggedIn === "true") {
+      router.push('/home');
+    } else {
+      router.push('/bhome');
+    }
+  }, [router]);
+
+  return <div>Redirecting...</div>;
+};
+
+export default Page;
