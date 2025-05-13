@@ -1,11 +1,15 @@
+"use client"
 import React, { useState, useEffect } from 'react';
 import { FaShoppingCart } from 'react-icons/fa';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import Popup from './Popup';
+import { useRouter } from 'next/navigation';
+
 
 const Item = ({ products }) => {
   const [cart, setCart] = useState([]);
   const [showPopup,setShowPopup]=useState(false);
+  const router=useRouter();
 
   useEffect(() => {
     try {
@@ -39,18 +43,23 @@ const Item = ({ products }) => {
     });
   };
 
+   const handleProductClick = (product) => {
+   localStorage.setItem("selectedProduct",JSON.stringify(product));
+   router.push("/product");
+  };
+
   if (!Array.isArray(products) || products.length === 0) {
     return <div className="text-center my-5 fs-4 text-muted">No products found.</div>;
   }
 
   return (
-    <div className="container my-5">
+    <div className="container my-5" >
       {showPopup && <Popup title="Cart" message="Added to cart" onClose={()=>setShowPopup(!showPopup)} />}
       <h2 className="text-center mb-4 fw-bold">Featured Products</h2>
       <div className="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4">
         {products.map((product, index) => (
           <div className="col" key={index}>
-            <div className="card h-100 shadow-sm border-0 product-card">
+            <div className="card h-100 shadow-sm border-0 product-card" onClick={()=>handleProductClick(product)}>
               <div className="position-relative">
                 <img
                   src={product.image}

@@ -13,19 +13,17 @@ const CartNavbar = () => {
   }, []);
 
   const handleProfileClick = () => {
-    alert('Go to Profile');
+    router.push("/profile")
   };
 
   
   const handleSearch = (e) => {
     e.preventDefault();
     alert('Search clicked');
-    // Implement search functionality
   };
 
   const handleFilterClick = () => {
     alert('Open Filters');
-    // Implement filter functionality
   };
 
   return (

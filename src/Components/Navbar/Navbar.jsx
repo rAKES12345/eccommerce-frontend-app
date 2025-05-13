@@ -13,7 +13,7 @@ const Navbar = () => {
   }, []);
 
   const handleProfileClick = () => {
-    alert('Go to Profile');
+    router.push("/profile");
   };
 
   const handleCartClick = () => {
