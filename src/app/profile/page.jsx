@@ -1,2 +1,2 @@
-import Profile from "@/Screens/Profile/Profile";
+import Profile from "@/Screens/user/Profile/Profile";
 export default Profile;

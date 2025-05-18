@@ -1,2 +1,2 @@
-import Product from "@/Screens/Product/Product";
+import Product from "@/Screens/user/Product/Product";
 export default Product;

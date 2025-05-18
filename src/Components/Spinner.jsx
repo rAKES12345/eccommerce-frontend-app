@@ -3,21 +3,31 @@ import React from "react";
 
 const Spinner = () => {
   return (
-    <div className="d-flex justify-content-center align-items-center vh-100 bg-light flex-column">
+    <div className="spinner-container">
       <div
-        className="spinner-border text-primary spinner-lg shadow"
+        className="spinner-border text-primary shadow spinner-lg"
         role="status"
         style={{ width: "4rem", height: "4rem" }}
       >
         <span className="visually-hidden">Loading...</span>
       </div>
-      <p className="mt-4 fs-5 text-muted">Fetching product details...</p>
 
       <style jsx>{`
-        .spinner-lg {
-          animation: fadeIn 1s ease-in-out infinite;
+        .spinner-container {
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
+          align-items: center;
+          height: 100vh;
+          width: 100%;
+          background-color: #f8f9fa;
         }
-        @keyframes fadeIn {
+
+        .spinner-lg {
+          animation: pulse 1.5s infinite ease-in-out;
+        }
+
+        @keyframes pulse {
           0% {
             opacity: 0.3;
             transform: scale(0.9);

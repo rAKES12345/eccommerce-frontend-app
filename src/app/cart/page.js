@@ -1,2 +1,2 @@
-import Cart from "@/Screens/Cart/Cart";
+import Cart from "@/Screens/user/Cart/Cart";
 export default Cart;
