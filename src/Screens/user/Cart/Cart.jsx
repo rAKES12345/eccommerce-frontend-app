@@ -9,6 +9,7 @@ import Spinner from "@/Components/Spinner";
 const Cart = () => {
   const [cartItems, setCartItems] = useState([]);
   const [name, setName] = useState("");
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const dummyName = localStorage.getItem("userName");
@@ -19,6 +20,7 @@ const Cart = () => {
     if (!name) return;
 
     const fetchCartItems = async () => {
+      setLoading(true);
       try {
         const cartRes = await axios.post("http://localhost:9091/cart/userscarts", { name });
 
@@ -38,6 +40,8 @@ const Cart = () => {
         }
       } catch (error) {
         console.error("Failed to fetch cart items", error);
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -49,7 +53,7 @@ const Cart = () => {
       await axios.delete("http://localhost:9091/cart/delete", {
         data: { name, itemId },
       });
-      setCartItems(cartItems.filter(item => item.id !== itemId));
+      setCartItems(cartItems.filter((item) => item.id !== itemId));
     } catch (error) {
       console.error("Error deleting item from cart", error);
     }
@@ -81,8 +85,10 @@ const Cart = () => {
     <div>
       <CartNavbar />
       <div className="container my-5">
-        {cartItems.length === 0 ? (
+        {loading ? (
           <Spinner />
+        ) : cartItems.length === 0 ? (
+          <p className="text-center">Your cart is empty</p>
         ) : (
           <>
             <div className="row">
