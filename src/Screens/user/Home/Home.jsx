@@ -2,7 +2,7 @@
 import Carousel from '@/Components/Carousel'
 import Footer from '@/Components/Footer'
 import Item from '@/Components/Item'
-import Navbar from '@/Components/Navbar/Navbar'
+import Navbar from '@/Components/Navbar'
 import axios from 'axios'
 import React, { useEffect, useState } from 'react'
 
@@ -23,10 +23,8 @@ const Home = () => {
 
   return (
     <div>
-      <Navbar />
       <Carousel />
       <Item products={products} />
-      <Footer />
     </div>
   );
 }

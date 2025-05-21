@@ -9,17 +9,22 @@ import axios from "axios";
 const Item = ({ products }) => {
   const [cartIds, setCartIds] = useState(new Set());
   const [userName, setUserName] = useState("");
+  const [role, setRole] = useState("");
   const [showPopup, setShowPopup] = useState(false);
   const [popupMessage, setPopupMessage] = useState("");
   const router = useRouter();
 
   useEffect(() => {
-    const dummyName = localStorage.getItem("userName");
-    if (dummyName) setUserName(dummyName);
+    const name = localStorage.getItem("userName");
+    const roleValue = localStorage.getItem("role");
+    if (name && roleValue) {
+      setUserName(name);
+      setRole(roleValue);
+    }
   }, []);
 
   useEffect(() => {
-    if (!userName) return;
+    if (!userName || !role) return;
 
     const fetchCartItems = async () => {
       try {
@@ -28,15 +33,7 @@ const Item = ({ products }) => {
         });
         const itemIds = response.data;
         if (Array.isArray(itemIds)) {
-          // fetch item details if needed
-          await Promise.all(
-            itemIds.map(async (itemId) => {
-              await axios.post("http://localhost:9091/item/getitembyid", {
-                id: itemId,
-              });
-            })
-          );
-          setCartIds(new Set(itemIds.map(String))); // store only IDs
+          setCartIds(new Set(itemIds.map(String)));
         }
       } catch (error) {
         console.error("Error fetching cart details:", error);
@@ -44,13 +41,22 @@ const Item = ({ products }) => {
     };
 
     fetchCartItems();
-  }, [userName]);
+  }, [userName, role]);
+
+  const showPopupMessage = (message) => {
+    setPopupMessage(message);
+    setShowPopup(true);
+    setTimeout(() => setShowPopup(false), 2000);
+  };
 
   const addToCart = async (product) => {
+    if (!userName || !role) {
+      router.push("/login");
+      return;
+    }
+
     if (cartIds.has(String(product.id))) {
-      setPopupMessage("Product already in cart");
-      setShowPopup(true);
-      setTimeout(() => setShowPopup(false), 2000);
+      showPopupMessage("Product already in cart");
       return;
     }
 
@@ -61,18 +67,16 @@ const Item = ({ products }) => {
       });
 
       setCartIds((prev) => new Set(prev).add(String(product.id)));
-      setPopupMessage("Added to cart");
-      setShowPopup(true);
-      setTimeout(() => setShowPopup(false), 2000);
+      showPopupMessage("Added to cart");
     } catch (e) {
-      console.log(e);
-      setPopupMessage("Failed to add product");
-      setShowPopup(true);
-      setTimeout(() => setShowPopup(false), 2000);
+      console.error(e);
+      showPopupMessage("Failed to add product");
     }
   };
 
   const handleProductClick = (product) => {
+    if (product.stock <= 0) return;
+
     localStorage.setItem("selectedProduct", JSON.stringify(product));
     router.push(`/product`);
   };
@@ -82,7 +86,7 @@ const Item = ({ products }) => {
   }
 
   return (
-    <div className="container my-5">
+    <div className="container my-4">
       {showPopup && (
         <Popup title="Cart" message={popupMessage} onClose={() => setShowPopup(false)} />
       )}
@@ -94,9 +98,9 @@ const Item = ({ products }) => {
           const isOutOfStock = product.stock <= 0;
 
           return (
-            <div className="col-sm-6 col-md-4 col-lg-3" key={index}>
+            <div className="col-12 col-sm-6 col-md-4 col-lg-3" key={index}>
               <div
-                className="card h-100 border-0 shadow-sm hover-shadow rounded-4"
+                className="card h-100 border-0 shadow-sm rounded-4 hover-shadow"
                 onClick={() => handleProductClick(product)}
                 style={{ cursor: "pointer", transition: "all 0.3s ease" }}
               >
@@ -105,8 +109,8 @@ const Item = ({ products }) => {
                   style={{ height: "200px" }}
                 >
                   <img
-                    src={product.image}
-                    alt={product.name}
+                    src={product.image || product.thumbnail || "default.jpg"}
+                    alt={product.name || "Product Image"}
                     className="w-100 h-100 object-fit-cover"
                   />
                   {discount && (
@@ -117,7 +121,9 @@ const Item = ({ products }) => {
                 </div>
 
                 <div className="card-body d-flex flex-column p-3">
-                  <h5 className="card-title text-truncate fw-semibold mb-2">{product.name}</h5>
+                  <h5 className="card-title text-truncate fw-semibold mb-2">
+                    {product.name}
+                  </h5>
                   <p className="text-muted small mb-1">
                     <strong>Section:</strong> {product.section}
                   </p>
@@ -132,12 +138,12 @@ const Item = ({ products }) => {
                   </p>
 
                   <p className="text-muted small mb-3 flex-grow-1">
-                    {product.description.length > 70
+                    {product.description?.length > 70
                       ? product.description.slice(0, 70) + "..."
-                      : product.description}
+                      : product.description || "No description available."}
                   </p>
 
-                  <div className="d-flex justify-content-between align-items-center">
+                  <div className="d-flex justify-content-between align-items-center mt-auto">
                     <div>
                       <span className="badge bg-primary px-3 py-2 fs-6">
                         ${product.price.toFixed(2)}
@@ -155,9 +161,7 @@ const Item = ({ products }) => {
                       }`}
                       onClick={(e) => {
                         e.stopPropagation();
-                        if (!isInCart && !isOutOfStock) {
-                          addToCart(product);
-                        }
+                        addToCart(product);
                       }}
                       disabled={isOutOfStock}
                     >

@@ -13,7 +13,11 @@ const SellerNavbar = () => {
   }, []);
 
   const handleProfileClick = () => {
+    if(localStorage.getItem("role")=="seller"){
     router.push("/seller/profile");
+    }else{
+      router.push("/deliverer/profile");
+    }
   };
 
   return (

@@ -15,8 +15,10 @@ const Page = () => {
       router.push('/seller/home');
     }else if(isLoggedIn=="true" && role=="admin"){
       router.push("/admin/home");
+    }else if(isLoggedIn=="true" && role=="deliverer"){
+      router.push("/deliverer/home");
     }else{
-      router.push("/bhome");
+      router.push("/home");
     }
   }, [router]);
 

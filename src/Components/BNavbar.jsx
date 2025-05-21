@@ -1,10 +1,10 @@
 'use client'
 import React, { useEffect, useState } from 'react';
-import { FaUserCircle, FaShoppingCart, FaSearch } from 'react-icons/fa';
+import { FaUserCircle, FaShoppingCart, FaSearch, FaUserPlus } from 'react-icons/fa';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { useRouter } from 'next/navigation';
 
-const CartNavbar = () => {
+const BNavbar = () => {
   const [username, setUsername] = useState("");
   const [showSearchBar, setShowSearchBar] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
@@ -14,9 +14,8 @@ const CartNavbar = () => {
     setUsername(localStorage.getItem("userName"));
   }, []);
 
-  const handleProfileClick = () => {
-    router.push("/profile");
-  };
+  const handleLoginClick = () => router.push("/login");
+  const handleRegisterClick = () => router.push("/register");
 
   const handleSearchIconClick = () => {
     setShowSearchBar(prev => !prev);
@@ -31,25 +30,32 @@ const CartNavbar = () => {
   return (
     <>
       <nav className="navbar bg-light shadow-sm px-3 py-2">
-        <div className="container-fluid d-flex flex-nowrap align-items-center justify-content-between">
-          <a className="navbar-brand fw-bold" href="/">ShopEase</a>
+  <div className="container-fluid d-flex flex-nowrap align-items-center justify-content-between">
+    <a className="navbar-brand fw-bold" href="/">ShopEase</a>
 
-          <div className="d-flex align-items-center gap-2 mt-2 mt-md-0">
-            {/* Search Icon */}
-            <button className="btn btn-outline-secondary p-1" onClick={handleSearchIconClick}>
-              <FaSearch size={18} />
-            </button>
+    <div className="d-flex align-items-center gap-2 mt-2 mt-md-0">
+      {/* Search Icon */}
+      <button className="btn btn-outline-secondary p-1" onClick={handleSearchIconClick}>
+        <FaSearch size={18} />
+      </button>
 
-            {/* Profile Button */}
-            <button className="btn btn-outline-primary d-flex align-items-center gap-1 p-1" onClick={handleProfileClick}>
-              <FaUserCircle size={20} />
-              <span className="d-none d-sm-inline">{username || "Guest"}</span>
-            </button>
-          </div>
-        </div>
-      </nav>
+      {/* Login Button */}
+      <button className="btn btn-outline-primary d-flex align-items-center gap-1 p-1" onClick={handleLoginClick}>
+        <FaUserCircle size={20} />
+        <span className="d-none d-sm-inline">Login</span>
+      </button>
 
-      {/* Search Bar */}
+      {/* Register Button */}
+      <button className="btn btn-outline-success d-flex align-items-center gap-1 p-1" onClick={handleRegisterClick}>
+        <FaUserPlus size={20} />
+        <span className="d-none d-sm-inline">Register</span>
+      </button>
+    </div>
+  </div>
+</nav>
+
+
+      {/* Conditional Search Bar Below Navbar */}
       {showSearchBar && (
         <div className="bg-white border-bottom py-3 px-3 shadow-sm">
           <form onSubmit={handleSearch} className="d-flex justify-content-center">
@@ -68,4 +74,4 @@ const CartNavbar = () => {
   );
 };
 
-export default CartNavbar;
+export default BNavbar;

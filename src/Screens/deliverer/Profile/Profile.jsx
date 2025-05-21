@@ -1,6 +1,5 @@
 "use client";
 import React, { useEffect, useState, useRef } from "react";
-import Footer from "@/Components/Footer";
 import Navbar from "@/Components/Navbar";
 import Popup from "@/Components/Popup";
 import { useAuth } from "@/app/AuthContext";
@@ -58,8 +57,7 @@ const Profile = () => {
 
   const logoutMethod = () => {
     logout();
-    localStorage.removeItem("isLoggedIn");
-    localStorage.removeItem("userName");
+    localStorage.clear();
     setShowPopup(true);
 
     setTimeout(() => {
@@ -101,11 +99,9 @@ const Profile = () => {
   return (
     <div className="d-flex flex-column min-vh-100">
       {loading && <Spinner />}
-      <Navbar />
       {showPopup && <Popup message={"Logged out successfully!"} />}
       {!loading && (
         <div className="d-flex">
-          <SellerSidebar />
           <div className="flex-grow-1 bg-light py-4">
             <div className="container">
               <div className="col-md-6 mx-auto">

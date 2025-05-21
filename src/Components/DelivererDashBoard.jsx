@@ -4,8 +4,9 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import SellerNavbar from './SellerNavbar';
 import SellerSidebar from './SellerSidebar';
 import axios from 'axios';
+import DelivererSidebar from './DelivererSidebar';
 
-const SellerDashBoard = () => {
+const DelivererDashBoard = () => {
   const [totalOrders, setTotalOrders] = useState("");
   const [totalProducts, setTotalProducts] = useState("");
 
@@ -42,12 +43,9 @@ const SellerDashBoard = () => {
   }, []);
 
   return (
-    <div>
-      <SellerNavbar />
-      <div className='d-flex'>
-        <SellerSidebar />
+      <div className='d-flex flex-grow-1 '>
         <div className="p-4 flex-grow-1 bg-light">
-          <h2 className="mb-4">Welcome to Seller Dashboard</h2>
+          <h2 className="mb-4">Welcome to Deliverer Dashboard</h2>
           <div className="row">
             <div className="col-md-4 mb-3">
               <div className="card shadow-sm">
@@ -76,8 +74,7 @@ const SellerDashBoard = () => {
           </div>
         </div>
       </div>
-    </div>
   );
 };
 
-export default SellerDashBoard;
+export default DelivererDashBoard;

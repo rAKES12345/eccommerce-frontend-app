@@ -102,10 +102,7 @@ const AddProduct = () => {
 
   return (
     
-    <div>
-      <SellerNavbar />
       <div className="d-flex">
-        <SellerSidebar />
         <div className="container mt-4">
           {showPopUp && <Popup message={"Product Added Successfully !"} onClose={()=>{setShowPopUp(!showPopUp)}} />}
           <h3 className="mb-4">Add New Product</h3>
@@ -181,7 +178,6 @@ const AddProduct = () => {
           </div>
         </div>
       </div>
-    </div>
   );
 };
 

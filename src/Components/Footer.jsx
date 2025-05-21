@@ -7,13 +7,11 @@ const Footer = () => {
     <div className="bg-dark text-light py-4 mt-5">
       <div className="container">
         <div className="row">
-          {/* Company Info */}
           <div className="col-md-4">
             <h5 className="fw-bold mb-3">ShopEase</h5>
             <p>ShopEase is your one-stop destination for the best products online. We strive to provide an exceptional shopping experience with easy navigation, secure payment methods, and fast delivery.</p>
           </div>
 
-          {/* Quick Links */}
           <div className="col-md-2">
             <h5 className="fw-bold mb-3">Quick Links</h5>
             <ul className="list-unstyled">
@@ -24,7 +22,6 @@ const Footer = () => {
             </ul>
           </div>
 
-          {/* Follow Us */}
           <div className="col-md-3">
             <h5 className="fw-bold mb-3">Follow Us</h5>
             <div className='d-flex'>
@@ -35,7 +32,6 @@ const Footer = () => {
             </div>
           </div>
 
-          {/* Registered Office Address */}
           <div className="col-md-3">
             <h5 className="fw-bold mb-3">Registered Office Address</h5>
             <p>

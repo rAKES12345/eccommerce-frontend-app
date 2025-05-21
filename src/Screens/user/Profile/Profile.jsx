@@ -1,7 +1,7 @@
 "use client";
 import React, { useEffect, useState, useRef } from 'react';
 import Footer from '@/Components/Footer';
-import Navbar from '@/Components/Navbar/Navbar';
+import Navbar from '@/Components/Navbar';
 import Popup from '@/Components/Popup';
 import { useAuth } from '@/app/AuthContext';
 import { useRouter } from 'next/navigation';
@@ -21,6 +21,11 @@ const Profile = () => {
     image: "https://via.placeholder.com/100"
   });
   const fileInputRef = useRef(null);
+
+  const [role,setRole]=useState("");
+    useEffect(()=>{
+      setRole(localStorage.getItem("role")? "customer" : "seller");
+    },[])
 
   useEffect(() => {
     const userName = localStorage.getItem("userName");
@@ -91,9 +96,8 @@ const Profile = () => {
   };
 
   return (
-    <div className="d-flex flex-column min-vh-100">
+    <div className="d-flex flex-column ">
       {loading && <Spinner />}
-      <Navbar />
       {showPopup && <Popup message={"Logged out successfully!"} />}
       <div className="flex-grow-1 bg-light py-4">
         <div className="container">
@@ -116,7 +120,7 @@ const Profile = () => {
                     onChange={handleFileChange}
                   />
                   <h5 className="fw-semibold mb-1">{userData.name}</h5>
-                  <p className="text-muted mb-0">Customer</p>
+                  <p className="text-muted mb-0">{role}</p>
                 </div>
 
                 <div className="card shadow p-3 d-flex flex-column gap-2">
@@ -157,7 +161,6 @@ const Profile = () => {
         </div>
       </div>
 
-      <Footer />
     </div>
   );
 };

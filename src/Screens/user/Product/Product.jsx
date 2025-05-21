@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import axios from 'axios';
 import Footer from '@/Components/Footer';
-import Navbar from '@/Components/Navbar/Navbar';
+import Navbar from '@/Components/Navbar';
 import Spinner from '@/Components/Spinner';
 import { useRouter } from 'next/navigation';
 import Popup from '@/Components/Popup';
@@ -12,10 +12,8 @@ const Product = () => {
   const [product, setProduct] = useState(null);
   const [userName, setUserName] = useState(null);
   const [cartIds, setCartIds] = useState(new Set());
-
   const [showPopup, setShowPopup] = useState(false);
-
-  const router=useRouter();
+  const router = useRouter();
 
   useEffect(() => {
     const dummyName = localStorage.getItem("userName");
@@ -43,35 +41,35 @@ const Product = () => {
   }, [userName]);
 
   const addToCart = async (id) => {
-  if (!userName) {
-    alert("Please login to add items to cart.");
-    return;
-  }
-
-  try {
-    const response = await axios.post("http://localhost:9091/cart/add", {
-      "name": userName,
-      "itemId": id,
-    });
-
-    if (response.status === 200) {
-      // Add the product id to cartIds state to update UI
-      setCartIds(prev => new Set(prev).add(String(id)));
-      setShowPopup(!showPopup);
-    } else {
-      alert("Failed to add to cart.");
+    if (!userName) {
+      router.push("/login");
+      return;
     }
-  } catch (error) {
-    console.error("Error adding to cart:", error);
-    alert("Something went wrong while adding to cart.");
-  }
-};
 
+    try {
+      const response = await axios.post("http://localhost:9091/cart/add", {
+        name: userName,
+        itemId: id,
+      });
+
+      if (response.status === 200) {
+        setCartIds(prev => new Set(prev).add(String(id)));
+        setShowPopup(true);
+      } else {
+        alert("Failed to add to cart.");
+      }
+    } catch (error) {
+      console.error("Error adding to cart:", error);
+      alert("Something went wrong while adding to cart.");
+    }
+  };
 
   useEffect(() => {
     const data = localStorage.getItem("selectedProduct");
     if (data) {
-      setProduct(JSON.parse(data));
+      const parsed = JSON.parse(data);
+      parsed.rating = Math.max(0, Math.min(5, parseFloat(parsed.rating) || 0));
+      setProduct(parsed);
     }
   }, []);
 
@@ -86,39 +84,40 @@ const Product = () => {
     return product.price.toFixed(2);
   };
 
-  const isInCart = product && cartIds.has(String(product.id));
+  const isInCart = cartIds.has(String(product.id));
 
-  const buyNow=(id)=>{
-    localStorage.setItem("buyNowProductId",id);
-    router.push("/buynow");
-  }
+  const buyNow = (id) => {
+    const dummyName = localStorage.getItem("userName");
+    if (!dummyName) {
+      router.push("/login");
+    } else {
+      localStorage.setItem("buyNowProductId", id);
+      router.push("/buynow");
+    }
+  };
 
   return (
-    <div className="d-flex flex-column min-vh-100 bg-light">
-      <Navbar />
-      {showPopup && <Popup message={"Item added to cart successfully"}  />}
-      <main className="container py-5 flex-grow-1">
-        <div className="card shadow-sm border-0 rounded-4 p-3 position-relative">
+    <div className="d-flex flex-column bg-light">
+      {showPopup && <Popup message="Item added to cart successfully" />}
+      <main className="container py-4 flex-grow-1">
+        <div className="card shadow border-0 rounded-4 p-3 position-relative bg-white">
 
-          {/* Wishlist Heart Icon */}
-          <button className="btn btn-light rounded-circle border position-absolute top-0 end-0 m-3">
-            <i className="bi bi-heart-fill text-danger"></i>
+          <button className="btn btn-light rounded-circle shadow-sm position-absolute top-0 end-0 m-3">
+            <i className="bi bi-heart-fill text-danger fs-5"></i>
           </button>
 
-          <div className="row g-4">
-            {/* Product Image */}
-            <div className="col-md-5 d-flex align-items-center justify-content-center bg-light rounded-start">
+          <div className="row g-4 flex-column flex-md-row">
+            <div className="col-md-5 d-flex align-items-center justify-content-center">
               <img
                 src={product.image || "https://via.placeholder.com/400"}
                 alt={product.name || "Product Image"}
-                className="img-fluid p-4"
+                className="img-fluid p-3 rounded"
                 style={{ maxHeight: '400px', objectFit: 'contain' }}
               />
             </div>
 
-            {/* Product Details */}
             <div className="col-md-7">
-              <div className="p-3">
+              <div className="px-md-3 d-flex flex-col align-center justify-center">
                 <h2 className="fw-bold mb-2">{product.name}</h2>
                 <p className="text-muted mb-1">
                   Brand: <strong>{product.brand}</strong> | Section: <strong>{product.section}</strong>
@@ -127,26 +126,23 @@ const Product = () => {
                   Rating: <strong>{product.rating} / 5</strong> | Stock: <strong>{product.stock}</strong>
                 </p>
 
-                {/* Rating Stars */}
-                <div className="text-warning mb-3 fs-5">
-                  {'★'.repeat(Math.max(0, Math.min(5, Math.floor(product.rating || 0))))}
-                  {'☆'.repeat(Math.max(0, 5 - Math.floor(product.rating || 0)))}
+                <div className="text-warning fs-5 mb-3">
+                  {'★'.repeat(Math.floor(product.rating))}
+                  {'☆'.repeat(5 - Math.floor(product.rating))}
                 </div>
 
-                {/* Color Options */}
                 {product.colors?.length > 0 && (
                   <>
-                    <p className="mb-1 text-muted">Color:</p>
+                    <p className="mb-1 text-muted">Colors:</p>
                     <div className="d-flex gap-2 mb-3">
-                      {product.colors.map((color, index) => (
+                      {product.colors.map((color, idx) => (
                         <div
-                          key={index}
-                          className="rounded-circle border"
+                          key={idx}
+                          className="rounded-circle border border-secondary"
                           style={{
                             backgroundColor: color,
                             width: '25px',
                             height: '25px',
-                            cursor: 'pointer'
                           }}
                         />
                       ))}
@@ -154,77 +150,62 @@ const Product = () => {
                   </>
                 )}
 
-                {/* Size Selector */}
                 {product.sizes?.length > 0 && (
                   <>
-                    <p className="mb-1 text-muted">Size:</p>
-                    <select className="form-select w-auto mb-4">
-                      {product.sizes.map((size, index) => (
-                        <option key={index} value={size}>{size}</option>
+                    <p className="mb-1 text-muted">Sizes:</p>
+                    <select className="form-select w-auto mb-3">
+                      {product.sizes.map((size, idx) => (
+                        <option key={idx} value={size}>{size}</option>
                       ))}
                     </select>
                   </>
                 )}
 
-                {/* Description */}
-                <p className="text-muted" style={{ lineHeight: '1.6' }}>
-                  {product.description || "No description available."}
-                </p>
+                <p className="text-muted">{product.description || "No description available."}</p>
 
-                {/* Discount */}
                 {product.discount > 0 && (
                   <p className="text-danger fw-semibold mb-2">
                     Discount: {product.discount}% OFF
                   </p>
                 )}
 
-                {/* Tags */}
                 {product.tags?.length > 0 && (
-                  <p className="mb-2 text-muted">
-                    Tags: {product.tags.map((tag, idx) => (
-                      <span key={idx} className="badge bg-secondary me-1">{tag}</span>
+                  <div className="mb-2">
+                    {product.tags.map((tag, idx) => (
+                      <span key={idx} className="badge bg-secondary me-2">{tag}</span>
                     ))}
-                  </p>
+                  </div>
                 )}
 
-                {/* Reviews */}
                 {product.reviews && (
-                  <p className="text-muted mb-2">
-                    <em>"{product.reviews}"</em>
-                  </p>
+                  <blockquote className="blockquote text-muted">
+                    <small>"{product.reviews}"</small>
+                  </blockquote>
                 )}
 
-                {/* Price and Actions */}
-                <div className="d-flex justify-content-between align-items-center mt-4">
+                <div className="d-flex justify-content-between align-items-center mt-4 flex-wrap gap-3">
                   <div>
                     {product.discount > 0 && (
-                      <small className="text-muted text-decoration-line-through me-2">
+                      <span className="text-muted text-decoration-line-through me-2">
                         ₹{product.price.toFixed(2)}
-                      </small>
+                      </span>
                     )}
-                    <h3 className="text-dark fw-bold mb-0 d-inline">₹{getDiscountedPrice()}</h3>
+                    <span className="fs-4 fw-bold text-dark">₹{getDiscountedPrice()}</span>
                   </div>
 
-                  {/* Conditional Cart Buttons */}
-                  <div className="d-flex gap-3">
+                  <div className="d-flex gap-2">
                     {isInCart ? (
-                      <>
-                        <button className="btn btn-secondary px-4 rounded-3 shadow-sm" disabled>
-                          In Cart
-                        </button>
-                      </>
+                      <button className="btn btn-outline-secondary px-4 rounded-3 shadow-sm" disabled>
+                        In Cart
+                      </button>
                     ) : (
-                      <button
-                       className="btn btn-success px-4 rounded-3 shadow-sm"
-  onClick={() => addToCart(product.id)}
->
-  Add to Cart +
-</button>
-
+                      <button className="btn btn-success px-4 rounded-3 shadow-sm" onClick={() => addToCart(product.id)}>
+                        Add to Cart +
+                      </button>
                     )}
-                    <button className="btn btn-primary px-4 rounded-3 shadow-sm" onClick={()=>{buyNow(product.id)}}>
-                          Buy Now
-                        </button>
+                    <button className="btn btn-primary px-4 rounded-3 shadow-sm" onClick={() => buyNow(product.id)}>
+                      Buy Now
+                    </button>
                   </div>
                 </div>
 
@@ -233,7 +214,6 @@ const Product = () => {
           </div>
         </div>
       </main>
-      <Footer />
     </div>
   );
 };

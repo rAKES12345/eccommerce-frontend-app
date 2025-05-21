@@ -1,15 +1,16 @@
-"use client";
+'use client';
 import React, { useState, useEffect } from "react";
 import { FaTrash } from "react-icons/fa";
 import "bootstrap/dist/css/bootstrap.min.css";
-import CartNavbar from "@/Components/CartNavbar";
 import axios from "axios";
 import Spinner from "@/Components/Spinner";
+import { useRouter } from "next/navigation";
 
 const Cart = () => {
   const [cartItems, setCartItems] = useState([]);
   const [name, setName] = useState("");
   const [loading, setLoading] = useState(true);
+  const router = useRouter();
 
   useEffect(() => {
     const dummyName = localStorage.getItem("userName");
@@ -32,7 +33,7 @@ const Cart = () => {
               const res = await axios.post("http://localhost:9091/item/getitembyid", {
                 id: itemId,
               });
-              return res.data;
+              return { ...res.data, quantity: res.data.quantity ?? 1 };
             })
           );
 
@@ -62,8 +63,8 @@ const Cart = () => {
   const updateQuantity = (id, action) => {
     const updatedCart = cartItems.map((item) => {
       if (item.id === id) {
-        const newQuantity =
-          action === "increase" ? item.quantity + 1 : Math.max(1, item.quantity - 1);
+        const currentQuantity = parseInt(item.quantity) || 1;
+        const newQuantity = action === "increase" ? currentQuantity + 1 : Math.max(1, currentQuantity - 1);
         return { ...item, quantity: newQuantity };
       }
       return item;
@@ -75,83 +76,113 @@ const Cart = () => {
     return cartItems
       .reduce((acc, item) => {
         const price = parseFloat(item.price) || 0;
-        const quantity = parseInt(item.quantity, 10) || 1;
+        const quantity = Math.max(1, parseInt(item.quantity, 10) || 1);
         return acc + price * quantity;
       }, 0)
       .toFixed(2);
   };
 
+  const openProduct = (product) => {
+    if (product.stock <= 0) return;
+
+    localStorage.setItem("selectedProduct", JSON.stringify(product));
+    router.push(`/product`);
+  };
+
   return (
-    <div>
-      <CartNavbar />
-      <div className="container my-5">
-        {loading ? (
-          <Spinner />
-        ) : cartItems.length === 0 ? (
-          <p className="text-center">Your cart is empty</p>
-        ) : (
-          <>
-            <div className="row">
-              {cartItems.map((item) => (
-                <div className="col-12 mb-3" key={item.id}>
-                  <div className="card shadow-sm border-0">
-                    <div className="row g-0">
-                      <div className="col-md-3">
-                        <img
-                          src={item.image}
-                          alt={item.title}
-                          className="img-fluid rounded-start"
-                          style={{ height: "150px", objectFit: "contain" }}
-                        />
-                      </div>
-                      <div className="col-md-7">
-                        <div className="card-body">
-                          <h5 className="card-title">{item.title}</h5>
-                          <p className="card-text">Price: ${item.price}</p>
-                          <p className="card-text">
-                            Subtotal: ${(item.price * item.quantity).toFixed(2)}
-                          </p>
-                          <div className="d-flex align-items-center">
-                            <button
-                              className="btn btn-outline-secondary me-2"
-                              onClick={() => updateQuantity(item.id, "decrease")}
-                              disabled={item.quantity <= 1}
-                            >
-                              -
-                            </button>
-                            <span>{item.quantity}</span>
-                            <button
-                              className="btn btn-outline-secondary ms-2"
-                              onClick={() => updateQuantity(item.id, "increase")}
-                            >
-                              +
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                      <div className="col-md-2 d-flex justify-content-center align-items-center">
+    <div className="container my-5">
+      {loading ? (
+        <Spinner />
+      ) : cartItems.length === 0 ? (
+        <p className="text-center">Your cart is empty</p>
+      ) : (
+        <>
+          <div className="row g-3">
+            {cartItems.map((item) => (
+              <div
+                key={item.id}
+                className="col-12"
+                onClick={() => openProduct(item)}
+                style={{ cursor: "pointer" }}
+              >
+                <div className="card shadow-sm border-0">
+                  <div className="row g-0 align-items-center">
+                    {/* Image section */}
+                    <div className="col-12 col-md-3 d-flex justify-content-center p-3">
+                      <img
+                        src={item.image}
+                        alt={item.title}
+                        className="img-fluid rounded"
+                        style={{
+                          maxHeight: "150px",
+                          objectFit: "contain",
+                          width: "auto",
+                        }}
+                      />
+                    </div>
+
+                    {/* Details section */}
+                    <div className="col-12 col-md-7 p-3">
+                      <h5 className="card-title">{item.title}</h5>
+                      <p className="card-text mb-1">Price: ${item.price}</p>
+                      <p className="card-text mb-2">
+                        Subtotal: ${(item.price * item.quantity).toFixed(2)}
+                      </p>
+                      <div className="d-flex align-items-center gap-2 flex-wrap">
                         <button
-                          className="btn btn-danger"
-                          onClick={() => removeFromCart(item.id)}
+                          className="btn btn-outline-secondary btn-sm"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            updateQuantity(item.id, "decrease");
+                          }}
+                          disabled={item.quantity <= 1}
                         >
-                          <FaTrash />
+                          -
+                        </button>
+                        <span className="px-2 fw-bold">{item.quantity}</span>
+                        <button
+                          className="btn btn-outline-secondary btn-sm"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            updateQuantity(item.id, "increase");
+                          }}
+                        >
+                          +
                         </button>
                       </div>
                     </div>
+
+                    {/* Delete button */}
+                    <div className="col-12 col-md-2 d-flex justify-content-center align-items-center p-3">
+                      <button
+                        className="btn btn-danger btn-sm"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          removeFromCart(item.id);
+                        }}
+                        aria-label={`Remove ${item.title} from cart`}
+                      >
+                        <FaTrash />
+                      </button>
+                    </div>
                   </div>
                 </div>
-              ))}
-            </div>
+              </div>
+            ))}
+          </div>
 
-            <div className="d-flex justify-content-between mt-4">
-              <h4>Total: ${getTotalPrice()}</h4>
-              <button className="btn btn-success" onClick={() => alert("Proceed to Checkout")}>
-                Proceed to Checkout
-              </button>
-            </div>
-          </>
-        )}
-      </div>
+          {/* Total & Checkout */}
+          <div className="d-flex flex-column flex-md-row justify-content-between align-items-center mt-4 gap-3">
+            <h4 className="m-0">Total: ${getTotalPrice()}</h4>
+            <button
+              className="btn btn-success px-4"
+              onClick={() => alert("Proceed to Checkout")}
+            >
+              Proceed to Checkout
+            </button>
+          </div>
+        </>
+      )}
     </div>
   );
 };

@@ -1,13 +1,23 @@
 "use client";
-
 import React, { useEffect, useState } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
-import Navbar from '@/Components/Navbar/Navbar';
+import Navbar from '@/Components/Navbar';
 import Footer from '@/Components/Footer';
 import axios from 'axios';
+import SuccessPopUp from '@/Components/SuccessPopUp';
+import { useRouter } from 'next/navigation';
 
 const BuyNow = () => {
   const [product, setProduct] = useState(null);
+  const router=useRouter();
+  const [order, setOrder] = useState({
+    itemId: "",
+    name: "",
+    address: "",
+    sellerId: "",
+    paymentMethod: "Cash on Delivery",
+  });
+  const [showSuccessPopup, setShowSuccessPopup] = useState(false);
 
   useEffect(() => {
     const fetchItemData = async () => {
@@ -17,6 +27,11 @@ const BuyNow = () => {
 
         const res = await axios.post("http://localhost:9091/item/getitembyid", { id });
         setProduct(res.data);
+        setOrder(prev => ({
+          ...prev,
+          itemId: res.data.id,
+          sellerId: res.data.sellerId
+        }));
       } catch (e) {
         console.log("Error fetching product:", e);
       }
@@ -25,19 +40,35 @@ const BuyNow = () => {
   }, []);
 
   const imageSrc = product?.image
-  ? product.image.startsWith('data:')
-    ? product.image // already full data URI
-    : `data:image/jpeg;base64,${product.image}`
-  : "https://via.placeholder.com/120";
+    ? product.image.startsWith('data:')
+      ? product.image
+      : `data:image/jpeg;base64,${product.image}`
+    : "https://via.placeholder.com/120";
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setOrder(prev => ({ ...prev, [name]: value }));
+  };
+
+  const buyNow = async (e) => {
+    e.preventDefault();
+    try {
+      const res = await axios.post("http://localhost:9091/order/add", order);
+      console.log("Order placed:", res.data);
+      setShowSuccessPopup(true);
+      setTimeout(() => setShowSuccessPopup(false), 3000);
+      router.push("/");
+    } catch (e) {
+      console.log("Order error:", e);
+      alert("Failed to place order.");
+    }
+  };
 
   return (
     <div className="d-flex flex-column min-vh-100 bg-light">
-      <Navbar />
-
       <main className="container py-5 flex-grow-1">
         <div className="card shadow-lg rounded-4 p-4">
           <h2 className="mb-4 text-center text-primary fw-bold">Confirm Your Purchase</h2>
-
           <div className="row g-4">
             {/* Product Summary */}
             <div className="col-md-6">
@@ -69,33 +100,56 @@ const BuyNow = () => {
             <div className="col-md-6">
               <div className="border rounded p-3 bg-white">
                 <h5 className="fw-semibold mb-3">Shipping Details</h5>
-                <form>
+                <form onSubmit={buyNow}>
                   <div className="mb-3">
                     <label className="form-label">Full Name</label>
-                    <input type="text" className="form-control" placeholder="Enter your full name" />
+                    <input
+                      type="text"
+                      className="form-control"
+                      name="name"
+                      value={order.name}
+                      onChange={handleInputChange}
+                      placeholder="Enter your full name"
+                      required
+                    />
                   </div>
                   <div className="mb-3">
                     <label className="form-label">Address</label>
-                    <textarea className="form-control" rows="3" placeholder="Enter your address"></textarea>
+                    <textarea
+                      className="form-control"
+                      name="address"
+                      rows="3"
+                      value={order.address}
+                      onChange={handleInputChange}
+                      placeholder="Enter your address"
+                      required
+                    ></textarea>
                   </div>
                   <div className="mb-3">
                     <label className="form-label">Payment Method</label>
-                    <select className="form-select">
+                    <select
+                      className="form-select"
+                      name="paymentMethod"
+                      value={order.paymentMethod}
+                      onChange={handleInputChange}
+                      required
+                    >
                       <option>Cash on Delivery</option>
                       <option>UPI</option>
                       <option>Credit/Debit Card</option>
                     </select>
                   </div>
-
-                  <button type="submit" className="btn btn-primary w-100 mt-3">Place Order</button>
+                  <button type="submit" className="btn btn-primary w-100 mt-3">
+                    Place Order
+                  </button>
                 </form>
               </div>
             </div>
           </div>
         </div>
-      </main>
 
-      <Footer />
+        <SuccessPopUp show={showSuccessPopup} onClose={() => setShowSuccessPopup(false)} />
+      </main>
     </div>
   );
 };
