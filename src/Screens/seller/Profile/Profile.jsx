@@ -58,12 +58,12 @@ const Profile = () => {
 
   const logoutMethod = () => {
     logout();
-    localStorage.removeItem("isLoggedIn");
-    localStorage.removeItem("userName");
+   
+    localStorage.clear();
     setShowPopup(true);
 
     setTimeout(() => {
-      router.push("/bhome");
+      router.push("/home");
     }, 1000);
   };
 
@@ -101,11 +101,9 @@ const Profile = () => {
   return (
     <div className="d-flex flex-column min-vh-100">
       {loading && <Spinner />}
-      <Navbar />
       {showPopup && <Popup message={"Logged out successfully!"} />}
       {!loading && (
-        <div className="d-flex">
-          <SellerSidebar />
+        <div className="">
           <div className="flex-grow-1 bg-light py-4">
             <div className="container">
               <div className="col-md-6 mx-auto">

@@ -1,17 +1,17 @@
-'use client';
+"use client";
 
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import { AuthProvider } from "./AuthContext";
 import DelivererSidebar from "@/Components/DelivererSidebar";
 import SellerSidebar from "@/Components/SellerSidebar";
-import { useEffect, useState } from "react";
 import SellerNavbar from "@/Components/SellerNavbar";
 import Navbar from "@/Components/Navbar";
-import BNavbar from "@/Components/BNavbar";
 import Footer from "@/Components/Footer";
-import CartNavbar from "@/Components/CartNavbar";
 import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
+
+// Import AuthProvider and useAuth correctly depending on your AuthContext setup
+import AuthProvider, { useAuth } from "./AuthContext"; // <== default export + named export
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -24,34 +24,48 @@ const geistMono = Geist_Mono({
 });
 
 export default function RootLayout({ children }) {
-  const [role, setRole] = useState(null);
-  const pathname = usePathname(); // Get current path
-
-  useEffect(() => {
-    const storedRole = localStorage.getItem("role");
-    setRole(storedRole);
-  }, []);
-
-  const isCartPage = pathname === "/cart";
-
   return (
     <html lang="en">
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <AuthProvider>
-          {role === null && <BNavbar />}
-          {role === "user" && !isCartPage && <Navbar />}
-          {role === "user" && isCartPage && <CartNavbar />}
-          {(role === "seller" || role === "deliverer") && <SellerNavbar />}
-
-          <div className="d-flex">
-            {role === "seller" && <SellerSidebar />}
-            {role === "deliverer" && <DelivererSidebar />}
-            <div className="flex-grow-1 w-100">{children}</div>
-          </div>
-
-          <Footer />
+          <ClientWrapper>{children}</ClientWrapper>
         </AuthProvider>
       </body>
     </html>
+  );
+}
+
+function ClientWrapper({ children }) {
+  const { user } = useAuth();
+  const pathname = usePathname();
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  if (!isMounted || user === undefined) return null;
+
+  const role = user?.role;
+  const showDefaultNavbar = !role || role === "user";
+  const isSeller = role === "seller";
+  const isDeliverer = role === "deliverer";
+
+  return (
+    <>
+      {showDefaultNavbar && <Navbar />}
+      {isSeller && <SellerNavbar />}
+      {isDeliverer && <SellerNavbar />} {/* Replace with DelivererNavbar if available */}
+
+      <div className="d-flex">
+        {isSeller && <SellerSidebar />}
+        {isDeliverer && <DelivererSidebar />}
+        <div className="flex-grow-1 w-100">
+          <div className="">{children}</div>
+        </div>
+      </div>
+
+      <Footer />
+    </>
   );
 }

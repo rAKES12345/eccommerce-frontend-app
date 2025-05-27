@@ -74,18 +74,7 @@ const Products = () => {
 
   return (
     <div>
-      <SellerNavbar
-        style={{
-          position: "fixed",
-          top: 0,
-          left: 0,
-          right: 0,
-          height: NAVBAR_HEIGHT,
-          zIndex: 1030,
-          backgroundColor: "white",
-          boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
-        }}
-      />
+      
 
       <div
         className="d-flex"
@@ -93,16 +82,7 @@ const Products = () => {
           height: `calc(100vh - ${NAVBAR_HEIGHT}px)`,
         }}
       >
-        <SellerSidebar
-          style={{
-            position: "sticky",
-            top: NAVBAR_HEIGHT,
-            height: `calc(100vh - ${NAVBAR_HEIGHT}px)`,
-            width: "250px",
-            backgroundColor: "#f8f9fa",
-          }}
-        />
-
+       
         <main
           className="container mt-4 flex-grow-1"
           style={{

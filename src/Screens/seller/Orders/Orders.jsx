@@ -59,9 +59,7 @@ const Orders = () => {
 
   return (
     <div className="min-vh-100 bg-light">
-      <SellerNavbar />
-      <div className="d-flex">
-        <SellerSidebar />
+      <div className="">
         <div className="flex-grow-1 p-4">
           <h3 className="mb-4 text-primary">Your Orders</h3>
           {orders.length === 0 ? (

@@ -57,10 +57,9 @@ const Profile = () => {
 
   const logoutMethod = () => {
     logout();
-    localStorage.removeItem("isLoggedIn");
-    localStorage.removeItem("userName");
+    localStorage.clear();
     setShowPopup(true);
-    router.push("/bhome");
+    router.push("/home");
   };
 
   // Trigger hidden file input click

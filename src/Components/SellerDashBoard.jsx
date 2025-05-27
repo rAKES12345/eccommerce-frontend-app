@@ -43,9 +43,7 @@ const SellerDashBoard = () => {
 
   return (
     <div>
-      <SellerNavbar />
       <div className='d-flex'>
-        <SellerSidebar />
         <div className="p-4 flex-grow-1 bg-light">
           <h2 className="mb-4">Welcome to Seller Dashboard</h2>
           <div className="row">

@@ -61,7 +61,7 @@ const Profile = () => {
     setShowPopup(true);
 
     setTimeout(() => {
-      router.push("/bhome");
+      router.push("/home");
     }, 1000);
   };
 

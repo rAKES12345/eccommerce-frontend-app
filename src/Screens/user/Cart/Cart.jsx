@@ -5,12 +5,15 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import axios from "axios";
 import Spinner from "@/Components/Spinner";
 import { useRouter } from "next/navigation";
+import { useAuth } from "@/app/AuthContext";
 
 const Cart = () => {
   const [cartItems, setCartItems] = useState([]);
   const [name, setName] = useState("");
   const [loading, setLoading] = useState(true);
   const router = useRouter();
+    const { searchItem, setSearchItem } = useAuth();
+
 
   useEffect(() => {
     const dummyName = localStorage.getItem("userName");
@@ -89,6 +92,18 @@ const Cart = () => {
     router.push(`/product`);
   };
 
+  const filteredProducts = cartItems.filter((product) => {
+    if (!searchItem || searchItem.trim() === "") return true;
+    const query = searchItem.toLowerCase();
+    return (
+      product.name?.toLowerCase().includes(query) ||
+      product.section?.toLowerCase().includes(query) ||
+      product.brand?.toLowerCase().includes(query) ||
+      product.description?.toLowerCase().includes(query)
+    );
+  });
+
+
   return (
     <div className="container my-5">
       {loading ? (
@@ -98,7 +113,7 @@ const Cart = () => {
       ) : (
         <>
           <div className="row g-3">
-            {cartItems.map((item) => (
+            {filteredProducts.map((item) => (
               <div
                 key={item.id}
                 className="col-12"
@@ -123,11 +138,12 @@ const Cart = () => {
 
                     {/* Details section */}
                     <div className="col-12 col-md-7 p-3">
-                      <h5 className="card-title">{item.title}</h5>
+                      <h5 className="card-title">{item.name}</h5>
                       <p className="card-text mb-1">Price: ${item.price}</p>
                       <p className="card-text mb-2">
                         Subtotal: ${(item.price * item.quantity).toFixed(2)}
                       </p>
+                      <p className="card-text mb-1">Description: {item.description}</p>
                       <div className="d-flex align-items-center gap-2 flex-wrap">
                         <button
                           className="btn btn-outline-secondary btn-sm"

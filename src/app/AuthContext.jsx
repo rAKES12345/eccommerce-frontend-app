@@ -1,30 +1,35 @@
-"use client";
-import React, { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useContext, useState, useEffect } from "react";
 
 const AuthContext = createContext();
 
-export const AuthProvider = ({ children }) => {
+export function useAuth() {
+  return useContext(AuthContext);
+}
+
+export default function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
 
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      const storedUser = localStorage.getItem("userName");
-      if (storedUser) {
-        setUser({ name: storedUser, role: "user" });
-      }
+    const name = localStorage.getItem("userName");
+    const isLoggedIn = localStorage.getItem("isLoggedIn");
+    const role = localStorage.getItem("role");
+    if (isLoggedIn === "true" && name && role) {
+      setUser({ name, role });
     }
   }, []);
 
-  const login = (userData) => {
-    setUser(userData);
+  const login = ({ name, role }) => {
+    localStorage.setItem("userName", name);
     localStorage.setItem("isLoggedIn", "true");
-    localStorage.setItem("userName", userData.name);
+    localStorage.setItem("role", role);
+    setUser({ name, role });
   };
 
   const logout = () => {
-    setUser(null);
-    localStorage.removeItem("isLoggedIn");
     localStorage.removeItem("userName");
+    localStorage.removeItem("isLoggedIn");
+    localStorage.removeItem("role");
+    setUser(null);
   };
 
   return (
@@ -32,6 +37,4 @@ export const AuthProvider = ({ children }) => {
       {children}
     </AuthContext.Provider>
   );
-};
-
-export const useAuth = () => useContext(AuthContext);
+}

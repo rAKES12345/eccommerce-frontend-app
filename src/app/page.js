@@ -1,4 +1,6 @@
+// app/page.js
 "use client";
+
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Spinner from '@/Components/Spinner';
@@ -7,17 +9,27 @@ const Page = () => {
   const router = useRouter();
 
   useEffect(() => {
-    const isLoggedIn = localStorage.getItem("isLoggedIn");
+    const isLoggedIn = typeof window !== "undefined" && localStorage.getItem("isLoggedIn") === "true";
     const role = localStorage.getItem("role");
-    if (isLoggedIn === "true" && role=="user") {
-      router.push('/home');
-    } else if(isLoggedIn=="true" && role=="seller") {
-      router.push('/seller/home');
-    }else if(isLoggedIn=="true" && role=="admin"){
-      router.push("/admin/home");
-    }else if(isLoggedIn=="true" && role=="deliverer"){
-      router.push("/deliverer/home");
-    }else{
+
+    if (isLoggedIn) {
+      switch (role) {
+        case "user":
+          router.push("/home");
+          break;
+        case "seller":
+          router.push("/seller/home");
+          break;
+        case "admin":
+          router.push("/admin/home");
+          break;
+        case "deliverer":
+          router.push("/deliverer/home");
+          break;
+        default:
+          router.push("/home");
+      }
+    } else {
       router.push("/home");
     }
   }, [router]);

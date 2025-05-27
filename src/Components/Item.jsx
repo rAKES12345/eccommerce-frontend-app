@@ -5,6 +5,7 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import { useRouter } from "next/navigation";
 import Spinner from "./Spinner";
 import axios from "axios";
+import { useAuth } from "@/app/AuthContext";
 
 const Item = ({ products }) => {
   const [cartIds, setCartIds] = useState(new Set());
@@ -13,6 +14,8 @@ const Item = ({ products }) => {
   const [showPopup, setShowPopup] = useState(false);
   const [popupMessage, setPopupMessage] = useState("");
   const router = useRouter();
+
+  const { searchItem, setSearchItem } = useAuth();
 
   useEffect(() => {
     const name = localStorage.getItem("userName");
@@ -85,6 +88,18 @@ const Item = ({ products }) => {
     return <Spinner />;
   }
 
+  // ✅ Filter products based on searchItem
+  const filteredProducts = products.filter((product) => {
+    if (!searchItem || searchItem.trim() === "") return true;
+    const query = searchItem.toLowerCase();
+    return (
+      product.name?.toLowerCase().includes(query) ||
+      product.section?.toLowerCase().includes(query) ||
+      product.brand?.toLowerCase().includes(query) ||
+      product.description?.toLowerCase().includes(query)
+    );
+  });
+
   return (
     <div className="container my-4">
       {showPopup && (
@@ -92,7 +107,7 @@ const Item = ({ products }) => {
       )}
 
       <div className="row g-4">
-        {products.map((product, index) => {
+        {filteredProducts.map((product, index) => {
           const isInCart = cartIds.has(String(product.id));
           const discount = product.discount ? `${product.discount}% OFF` : null;
           const isOutOfStock = product.stock <= 0;
