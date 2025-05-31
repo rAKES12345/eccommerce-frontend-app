@@ -11,7 +11,7 @@ import { useUserOperations } from "@/context/UserOperationsContext";
 import { AuthContext, useAuth } from "@/context/AuthContext";
 
 const Product = () => {
-  const { product, setProduct,  cartIds, addToCart } = useUserOperations();
+  const { product, setProduct,  cartIds, addToCartMethod } = useUserOperations();
   const {user}=useAuth();
 
   const [showPopup, setShowPopup] = useState(false);
@@ -52,7 +52,7 @@ const Product = () => {
       return;
     }
 
-    const result = await addToCart(id);
+    const result = await addToCartMethod(id);
     if (result.success) {
       setShowPopup(true);
       setTimeout(() => setShowPopup(false), 2000);

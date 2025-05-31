@@ -18,8 +18,10 @@ const Carousel = () => {
         <Image 
         src={`/images/${images[currentIndex]}`}
         alt="Banner"
-        width={1200}
-        height={500}
+         width="0"
+    height="0"
+    sizes="100vw"
+    style={{ width: '100%', height: 'auto' }}
         priority     
         />
     </div>
