@@ -18,7 +18,7 @@ const DelivererDashBoard = () => {
 
         if (role !== "seller" || !sellerName) return;
 
-        const sellerRes = await axios.post("http://localhost:9091/seller/getsellerdetailsbyname", { name: sellerName });
+        const sellerRes = await axios.post("https://ecommerce-0zde.onrender.com/seller/getsellerdetailsbyname", { name: sellerName });
         const sellerId = sellerRes.data?.id;
 
         if (!sellerId) {
@@ -26,10 +26,10 @@ const DelivererDashBoard = () => {
           return;
         }
 
-        const orderRes = await axios.post("http://localhost:9091/order/totalsellersorders", { "sellerId":sellerId });
+        const orderRes = await axios.post("https://ecommerce-0zde.onrender.com/order/totalsellersorders", { "sellerId":sellerId });
         setTotalOrders(orderRes.data);
 
-        const productRes = await axios.post("http://localhost:9091/item/totalsellersproducts", { "sellerId":sellerId });
+        const productRes = await axios.post("https://ecommerce-0zde.onrender.com/item/totalsellersproducts", { "sellerId":sellerId });
         setTotalProducts(productRes.data);
 
       } catch (error) {
@@ -50,7 +50,7 @@ const DelivererDashBoard = () => {
             <div className="col-md-4 mb-3">
               <div className="card shadow-sm">
                 <div className="card-body">
-                  <h5 className="card-title">Orders  Received</h5>
+                  <h5 className="card-title">Deliveries Received</h5>
                   <p className="card-text">{totalOrders}</p> 
                 </div>
               </div>

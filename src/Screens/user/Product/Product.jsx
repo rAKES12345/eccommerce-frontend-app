@@ -1,94 +1,68 @@
 "use client";
-import { useEffect, useState } from 'react';
-import 'bootstrap/dist/css/bootstrap.min.css';
-import axios from 'axios';
-import Footer from '@/Components/Footer';
-import Navbar from '@/Components/Navbar';
-import Spinner from '@/Components/Spinner';
-import { useRouter } from 'next/navigation';
-import Popup from '@/Components/Popup';
+
+import { useEffect, useState } from "react";
+import "bootstrap/dist/css/bootstrap.min.css";
+import Footer from "@/Components/Footer";
+import Navbar from "@/Components/Navbar";
+import Spinner from "@/Components/Spinner";
+import Popup from "@/Components/Popup";
+import { useRouter } from "next/navigation";
+import { useUserOperations } from "@/context/UserOperationsContext";
+import { AuthContext, useAuth } from "@/context/AuthContext";
 
 const Product = () => {
-  const [product, setProduct] = useState(null);
-  const [userName, setUserName] = useState(null);
-  const [cartIds, setCartIds] = useState(new Set());
+  const { product, setProduct,  cartIds, addToCart } = useUserOperations();
+  const {user}=useAuth();
+
   const [showPopup, setShowPopup] = useState(false);
   const router = useRouter();
+  const [userName,setUserName]=useState("");
 
+  // Load product from localStorage once on mount if not already loaded
   useEffect(() => {
-    const dummyName = localStorage.getItem("userName");
-    if (dummyName) setUserName(dummyName);
-  }, []);
-
-  useEffect(() => {
-    if (!userName) return;
-
-    const fetchCartItems = async () => {
-      try {
-        const response = await axios.post("http://localhost:9091/cart/userscarts", {
-          name: userName,
-        });
-        const itemIds = response.data;
-        if (Array.isArray(itemIds)) {
-          setCartIds(new Set(itemIds.map(String)));
-        }
-      } catch (error) {
-        console.error("Error fetching cart details:", error);
-      }
-    };
-
-    fetchCartItems();
-  }, [userName]);
-
-  const addToCart = async (id) => {
-    if (!userName) {
-      router.push("/login");
-      return;
-    }
-
-    try {
-      const response = await axios.post("http://localhost:9091/cart/add", {
-        name: userName,
-        itemId: id,
-      });
-
-      if (response.status === 200) {
-        setCartIds(prev => new Set(prev).add(String(id)));
-        setShowPopup(true);
-      } else {
-        alert("Failed to add to cart.");
-      }
-    } catch (error) {
-      console.error("Error adding to cart:", error);
-      alert("Something went wrong while adding to cart.");
-    }
-  };
-
-  useEffect(() => {
+    setUserName(user.username);
+    if (product) return; // Already loaded by context
     const data = localStorage.getItem("selectedProduct");
     if (data) {
-      const parsed = JSON.parse(data);
-      parsed.rating = Math.max(0, Math.min(5, parseFloat(parsed.rating) || 0));
-      setProduct(parsed);
+      try {
+        const parsed = JSON.parse(data);
+        // sanitize rating between 0 and 5, fallback 0 if invalid
+        parsed.rating = Math.max(0, Math.min(5, parseFloat(parsed.rating) || 0));
+        setProduct(parsed);
+      } catch (err) {
+        console.error("Failed to parse selectedProduct from localStorage:", err);
+      }
     }
-  }, []);
+  }, [product, setProduct]);
 
-  if (!product) {
-    return <Spinner />;
-  }
+  // Check if product is in cart
+  const isInCart = product ? cartIds.has(String(product.id)) : false;
 
   const getDiscountedPrice = () => {
+    if (!product) return "";
     if (product.discount > 0) {
       return (product.price - (product.price * product.discount) / 100).toFixed(2);
     }
     return product.price.toFixed(2);
   };
 
-  const isInCart = cartIds.has(String(product.id));
+  const handleAddToCart = async (id) => {
+    if (!userName) {
+      router.push("/login");
+      return;
+    }
+
+    const result = await addToCart(id);
+    if (result.success) {
+      setShowPopup(true);
+      setTimeout(() => setShowPopup(false), 2000);
+    } else {
+      alert(result.message || "Failed to add to cart.");
+    }
+  };
 
   const buyNow = (id) => {
-    const dummyName = localStorage.getItem("userName");
-    if (!dummyName) {
+    if (!userName) {
       router.push("/login");
     } else {
       localStorage.setItem("buyNowProductId", id);
@@ -96,13 +70,19 @@ const Product = () => {
     }
   };
 
+  if (!product) {
+    return <Spinner />;
+  }
+
   return (
-    <div className="d-flex flex-column bg-light">
+    <div className="d-flex flex-column bg-light min-vh-100">
       {showPopup && <Popup message="Item added to cart successfully" />}
       <main className="container py-4 flex-grow-1">
         <div className="card shadow border-0 rounded-4 p-3 position-relative bg-white">
-
-          <button className="btn btn-light rounded-circle shadow-sm position-absolute top-0 end-0 m-3">
+          <button
+            className="btn btn-light rounded-circle shadow-sm position-absolute top-0 end-0 m-3"
+            aria-label="Favorite"
+          >
             <i className="bi bi-heart-fill text-danger fs-5"></i>
           </button>
 
@@ -112,12 +92,12 @@ const Product = () => {
                 src={product.image || "https://via.placeholder.com/400"}
                 alt={product.name || "Product Image"}
                 className="img-fluid p-3 rounded"
-                style={{ maxHeight: '400px', objectFit: 'contain' }}
+                style={{ maxHeight: "400px", objectFit: "contain" }}
               />
             </div>
 
             <div className="col-md-7">
-              <div className="px-md-3 d-flex flex-col align-center justify-center">
+              <div className="px-md-3 d-flex flex-column justify-content-center">
                 <h2 className="fw-bold mb-2">{product.name}</h2>
                 <p className="text-muted mb-1">
                   Brand: <strong>{product.brand}</strong> | Section: <strong>{product.section}</strong>
@@ -126,9 +106,9 @@ const Product = () => {
                   Rating: <strong>{product.rating} / 5</strong> | Stock: <strong>{product.stock}</strong>
                 </p>
 
-                <div className="text-warning fs-5 mb-3">
-                  {'★'.repeat(Math.floor(product.rating))}
-                  {'☆'.repeat(5 - Math.floor(product.rating))}
+                <div className="text-warning fs-5 mb-3" aria-label={`Rating: ${product.rating} out of 5 stars`}>
+                  {"★".repeat(Math.floor(product.rating))}
+                  {"☆".repeat(5 - Math.floor(product.rating))}
                 </div>
 
                 {product.colors?.length > 0 && (
@@ -141,9 +121,10 @@ const Product = () => {
                           className="rounded-circle border border-secondary"
                           style={{
                             backgroundColor: color,
-                            width: '25px',
-                            height: '25px',
+                            width: "25px",
+                            height: "25px",
                           }}
+                          aria-label={`Color option ${color}`}
                         />
                       ))}
                     </div>
@@ -153,9 +134,11 @@ const Product = () => {
                 {product.sizes?.length > 0 && (
                   <>
                     <p className="mb-1 text-muted">Sizes:</p>
-                    <select className="form-select w-auto mb-3">
+                    <select className="form-select w-auto mb-3" aria-label="Select size">
                       {product.sizes.map((size, idx) => (
-                        <option key={idx} value={size}>{size}</option>
+                        <option key={idx} value={size}>
+                          {size}
+                        </option>
                       ))}
                     </select>
                   </>
@@ -164,15 +147,15 @@ const Product = () => {
                 <p className="text-muted">{product.description || "No description available."}</p>
 
                 {product.discount > 0 && (
-                  <p className="text-danger fw-semibold mb-2">
-                    Discount: {product.discount}% OFF
-                  </p>
+                  <p className="text-danger fw-semibold mb-2">Discount: {product.discount}% OFF</p>
                 )}
 
                 {product.tags?.length > 0 && (
                   <div className="mb-2">
                     {product.tags.map((tag, idx) => (
-                      <span key={idx} className="badge bg-secondary me-2">{tag}</span>
+                      <span key={idx} className="badge bg-secondary me-2">
+                        {tag}
+                      </span>
                     ))}
                   </div>
                 )}
@@ -195,25 +178,38 @@ const Product = () => {
 
                   <div className="d-flex gap-2">
                     {isInCart ? (
-                      <button className="btn btn-outline-secondary px-4 rounded-3 shadow-sm" disabled>
+                      <button
+                        className="btn btn-outline-secondary px-4 rounded-3 shadow-sm"
+                        disabled
+                        aria-disabled="true"
+                        aria-label="Product already in cart"
+                      >
                         In Cart
                       </button>
                     ) : (
-                      <button className="btn btn-success px-4 rounded-3 shadow-sm" onClick={() => addToCart(product.id)}>
+                      <button
+                        className="btn btn-success px-4 rounded-3 shadow-sm"
+                        onClick={() => handleAddToCart(product.id)}
+                        aria-label="Add product to cart"
+                      >
                         Add to Cart +
                       </button>
                     )}
-                    <button className="btn btn-primary px-4 rounded-3 shadow-sm" onClick={() => buyNow(product.id)}>
+                    <button
+                      className="btn btn-primary px-4 rounded-3 shadow-sm"
+                      onClick={() => buyNow(product.id)}
+                      aria-label="Buy now"
+                    >
                       Buy Now
                     </button>
                   </div>
                 </div>
-
               </div>
             </div>
           </div>
         </div>
       </main>
+      <Footer />
     </div>
   );
 };

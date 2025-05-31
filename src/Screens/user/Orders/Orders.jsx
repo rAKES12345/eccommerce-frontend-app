@@ -1,52 +1,16 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
-import axios from "axios";
-import { useRouter } from "next/navigation";
-import { useAuth } from "@/app/AuthContext";
+import { useUserOperations } from "@/context/UserOperationsContext";
 
 const Orders = () => {
-  const [orders, setOrders] = useState([]);
-  const [itemsData, setItemsData] = useState({});
-  const [loading, setLoading] = useState(true);
-  const router = useRouter();
-  const { searchItem, setSearchItem } = useAuth();
-  const name = typeof window !== "undefined" ? localStorage.getItem("userName") : null;
-
-  useEffect(() => {
-    const fetchOrders = async () => {
-      try {
-        const res = await axios.post("http://localhost:9091/order/getusersorders", { name });
-        setOrders(res.data || []);
-
-        const itemRequests = res.data.map((order) =>
-          axios.post("http://localhost:9091/item/getitembyid", {
-            id: order.itemId,
-          })
-        );
-
-        const itemsResponses = await Promise.all(itemRequests);
-        const itemsMap = {};
-        itemsResponses.forEach((response) => {
-          if (response.data && response.data.id) {
-            itemsMap[response.data.id] = response.data;
-          }
-        });
-
-        setItemsData(itemsMap);
-      } catch (error) {
-        console.error("Error fetching orders or items:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    if (name) {
-      fetchOrders();
-    } else {
-      setLoading(false);
-    }
-  }, [name]);
+  const {
+    orders,
+    filteredOrders = orders,
+    itemsData = {},
+    loadingOrders,
+    openOrder,
+  } = useUserOperations();
 
   const getStatusClass = (status) => {
     switch ((status || "").toUpperCase()) {
@@ -61,27 +25,10 @@ const Orders = () => {
     }
   };
 
-  const openOrder = (order) => {
-    localStorage.setItem("orderData", JSON.stringify(order));
-    router.push("/orderDetails");
-  };
-
-  const filteredOrders = orders.filter((order) => {
-    if (!searchItem || searchItem.trim() === "") return true;
-    const query = searchItem.toLowerCase();
-    const item = itemsData[order.itemId] || {};
-    return (
-      item.name?.toLowerCase().includes(query) ||
-      item.section?.toLowerCase().includes(query) ||
-      item.brand?.toLowerCase().includes(query) ||
-      item.description?.toLowerCase().includes(query)
-    );
-  });
-
   return (
     <div className="container my-5">
       <h2 className="text-center text-primary fw-bold mb-4">Your Orders</h2>
-      {loading ? (
+      {loadingOrders ? (
         <div className="text-center">Loading orders...</div>
       ) : filteredOrders.length === 0 ? (
         <div className="alert alert-info text-center">You have no orders yet.</div>

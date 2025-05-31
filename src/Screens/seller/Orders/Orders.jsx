@@ -16,12 +16,12 @@ const Orders = () => {
 
         if (role !== "seller" || !sellerName) return;
 
-        const sellerRes = await axios.post("http://localhost:9091/seller/getsellerdetailsbyname", { name: sellerName });
+        const sellerRes = await axios.post("https://ecommerce-0zde.onrender.com/seller/getsellerdetailsbyname", { name: sellerName });
         const sellerId = sellerRes.data?.id;
 
         if (!sellerId) return;
 
-        const orderRes = await axios.post("http://localhost:9091/order/getbysellerorders", { sellerId });
+        const orderRes = await axios.post("https://ecommerce-0zde.onrender.com/order/getbysellerorders", { sellerId });
 
         if (Array.isArray(orderRes.data)) {
           setOrders(orderRes.data);
@@ -41,7 +41,7 @@ const Orders = () => {
   // Function to update order status to "SHIPPED"
   const makeShipment = async (orderId) => {
     try {
-      await axios.post("http://localhost:9091/order/updateorderstatus", {
+      await axios.post("https://ecommerce-0zde.onrender.com/order/updateorderstatus", {
         orderId,
         status: "SHIPPED",
       });

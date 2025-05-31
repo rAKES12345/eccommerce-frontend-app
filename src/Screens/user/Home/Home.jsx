@@ -12,7 +12,7 @@ const Home = () => {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const response = await axios.get("http://localhost:9091/item/all");
+        const response = await axios.get("https://ecommerce-0zde.onrender.com/item/all");
         setProducts(response.data);
       } catch (e) {
         console.log(e);

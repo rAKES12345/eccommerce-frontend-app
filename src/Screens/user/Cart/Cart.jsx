@@ -1,93 +1,32 @@
 'use client';
-import React, { useState, useEffect } from "react";
+import React, { useEffect } from "react";
 import { FaTrash } from "react-icons/fa";
 import "bootstrap/dist/css/bootstrap.min.css";
-import axios from "axios";
 import Spinner from "@/Components/Spinner";
 import { useRouter } from "next/navigation";
-import { useAuth } from "@/app/AuthContext";
+import { useUserOperations } from "@/context/UserOperationsContext";
 
 const Cart = () => {
-  const [cartItems, setCartItems] = useState([]);
-  const [name, setName] = useState("");
-  const [loading, setLoading] = useState(true);
   const router = useRouter();
-    const { searchItem, setSearchItem } = useAuth();
-
+  const {
+    user,
+    cartItems,
+    loadingCart,
+    fetchCartItems,
+    removeFromCart,
+    updateQuantity,
+    getTotalPrice,
+    searchItem,
+  } = useUserOperations();
 
   useEffect(() => {
-    const dummyName = localStorage.getItem("userName");
-    if (dummyName) setName(dummyName);
-  }, []);
-
-  useEffect(() => {
-    if (!name) return;
-
-    const fetchCartItems = async () => {
-      setLoading(true);
-      try {
-        const cartRes = await axios.post("http://localhost:9091/cart/userscarts", { name });
-
-        if (Array.isArray(cartRes.data)) {
-          const itemIds = cartRes.data;
-
-          const itemDetails = await Promise.all(
-            itemIds.map(async (itemId) => {
-              const res = await axios.post("http://localhost:9091/item/getitembyid", {
-                id: itemId,
-              });
-              return { ...res.data, quantity: res.data.quantity ?? 1 };
-            })
-          );
-
-          setCartItems(itemDetails);
-        }
-      } catch (error) {
-        console.error("Failed to fetch cart items", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchCartItems();
-  }, [name]);
-
-  const removeFromCart = async (itemId) => {
-    try {
-      await axios.delete("http://localhost:9091/cart/delete", {
-        data: { name, itemId },
-      });
-      setCartItems(cartItems.filter((item) => item.id !== itemId));
-    } catch (error) {
-      console.error("Error deleting item from cart", error);
+    if (user?.username) {
+      fetchCartItems(user.username);
     }
-  };
-
-  const updateQuantity = (id, action) => {
-    const updatedCart = cartItems.map((item) => {
-      if (item.id === id) {
-        const currentQuantity = parseInt(item.quantity) || 1;
-        const newQuantity = action === "increase" ? currentQuantity + 1 : Math.max(1, currentQuantity - 1);
-        return { ...item, quantity: newQuantity };
-      }
-      return item;
-    });
-    setCartItems(updatedCart);
-  };
-
-  const getTotalPrice = () => {
-    return cartItems
-      .reduce((acc, item) => {
-        const price = parseFloat(item.price) || 0;
-        const quantity = Math.max(1, parseInt(item.quantity, 10) || 1);
-        return acc + price * quantity;
-      }, 0)
-      .toFixed(2);
-  };
+  }, [user, fetchCartItems]);
 
   const openProduct = (product) => {
     if (product.stock <= 0) return;
-
     localStorage.setItem("selectedProduct", JSON.stringify(product));
     router.push(`/product`);
   };
@@ -103,65 +42,70 @@ const Cart = () => {
     );
   });
 
-
   return (
     <div className="container my-5">
-      {loading ? (
+      {loadingCart ? (
         <Spinner />
-      ) : cartItems.length === 0 ? (
-        <p className="text-center">Your cart is empty</p>
+      ) : filteredProducts.length === 0 ? (
+        <p className="text-center fs-5">Your cart is empty</p>
       ) : (
         <>
           <div className="row g-3">
-            {filteredProducts.map((item) => (
+            {filteredProducts.map((item, ind) => (
               <div
-                key={item.id}
+                key={ind}
                 className="col-12"
                 onClick={() => openProduct(item)}
-                style={{ cursor: "pointer" }}
+                style={{ cursor: item.stock > 0 ? "pointer" : "not-allowed" }}
+                aria-disabled={item.stock <= 0}
               >
                 <div className="card shadow-sm border-0">
                   <div className="row g-0 align-items-center">
-                    {/* Image section */}
+                    {/* Image */}
                     <div className="col-12 col-md-3 d-flex justify-content-center p-3">
                       <img
-                        src={item.image}
-                        alt={item.title}
+                        src={item.image || item.thumbnail || "/default.jpg"}
+                        alt={item.name || "Product Image"}
                         className="img-fluid rounded"
-                        style={{
-                          maxHeight: "150px",
-                          objectFit: "contain",
-                          width: "auto",
-                        }}
+                        style={{ maxHeight: "150px", objectFit: "contain", width: "auto" }}
                       />
                     </div>
 
-                    {/* Details section */}
+                    {/* Details */}
                     <div className="col-12 col-md-7 p-3">
                       <h5 className="card-title">{item.name}</h5>
-                      <p className="card-text mb-1">Price: ${item.price}</p>
+                      <p className="card-text mb-1">
+                        Price: ₹{parseFloat(item.price).toFixed(2)}
+                      </p>
                       <p className="card-text mb-2">
-                        Subtotal: ${(item.price * item.quantity).toFixed(2)}
+                        Subtotal: ₹
+                        {(parseFloat(item.price) * (item.quantity || 1)).toFixed(2)}
                       </p>
                       <p className="card-text mb-1">Description: {item.description}</p>
+
+                      {/* Quantity controls */}
                       <div className="d-flex align-items-center gap-2 flex-wrap">
                         <button
                           className="btn btn-outline-secondary btn-sm"
                           onClick={(e) => {
                             e.stopPropagation();
-                            updateQuantity(item.id, "decrease");
+                            if (item.quantity > 1) updateQuantity(item.id, "decrease");
                           }}
                           disabled={item.quantity <= 1}
+                          aria-label={`Decrease quantity of ${item.name}`}
                         >
                           -
                         </button>
-                        <span className="px-2 fw-bold">{item.quantity}</span>
+                        <span className="px-2 fw-bold" aria-live="polite">
+                          {item.quantity}
+                        </span>
                         <button
                           className="btn btn-outline-secondary btn-sm"
                           onClick={(e) => {
                             e.stopPropagation();
                             updateQuantity(item.id, "increase");
                           }}
+                          aria-label={`Increase quantity of ${item.name}`}
                         >
                           +
                         </button>
@@ -176,7 +120,7 @@ const Cart = () => {
                           e.stopPropagation();
                           removeFromCart(item.id);
                         }}
-                        aria-label={`Remove ${item.title} from cart`}
+                        aria-label={`Remove ${item.name} from cart`}
                       >
                         <FaTrash />
                       </button>
@@ -187,9 +131,9 @@ const Cart = () => {
             ))}
           </div>
 
-          {/* Total & Checkout */}
+          {/* Total and Checkout */}
           <div className="d-flex flex-column flex-md-row justify-content-between align-items-center mt-4 gap-3">
-            <h4 className="m-0">Total: ${getTotalPrice()}</h4>
+            <h4 className="m-0">Total: ₹{getTotalPrice()}</h4>
             <button
               className="btn btn-success px-4"
               onClick={() => alert("Proceed to Checkout")}

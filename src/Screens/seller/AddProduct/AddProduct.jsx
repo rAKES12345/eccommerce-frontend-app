@@ -30,7 +30,7 @@ const AddProduct = () => {
         const sellerName = localStorage.getItem("userName");
         try {
           const res = await axios.post(
-            "http://localhost:9091/item/getselleridbyname",
+            "https://ecommerce-0zde.onrender.com/item/getselleridbyname",
             { name: sellerName },  // JSON body
             { headers: { "Content-Type": "application/json" } }
           );
@@ -71,7 +71,7 @@ const AddProduct = () => {
   e.preventDefault();
   try {
     console.log("Submitted Product:", product);
-    const res = await axios.post("http://localhost:9091/item/add", product, {
+    const res = await axios.post("https://ecommerce-0zde.onrender.com/item/add", product, {
       headers: {
         "Content-Type": "application/json",
       },

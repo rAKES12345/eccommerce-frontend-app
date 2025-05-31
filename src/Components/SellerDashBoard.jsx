@@ -17,7 +17,7 @@ const SellerDashBoard = () => {
 
         if (role !== "seller" || !sellerName) return;
 
-        const sellerRes = await axios.post("http://localhost:9091/seller/getsellerdetailsbyname", { name: sellerName });
+        const sellerRes = await axios.post("https://ecommerce-0zde.onrender.com/seller/getsellerdetailsbyname", { name: sellerName });
         const sellerId = sellerRes.data?.id;
 
         if (!sellerId) {
@@ -25,10 +25,10 @@ const SellerDashBoard = () => {
           return;
         }
 
-        const orderRes = await axios.post("http://localhost:9091/order/totalsellersorders", { "sellerId":sellerId });
+        const orderRes = await axios.post("https://ecommerce-0zde.onrender.com/order/totalsellersorders", { "sellerId":sellerId });
         setTotalOrders(orderRes.data);
 
-        const productRes = await axios.post("http://localhost:9091/item/totalsellersproducts", { "sellerId":sellerId });
+        const productRes = await axios.post("https://ecommerce-0zde.onrender.com/item/totalsellersproducts", { "sellerId":sellerId });
         setTotalProducts(productRes.data);
 
       } catch (error) {

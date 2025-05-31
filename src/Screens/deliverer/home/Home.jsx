@@ -13,7 +13,12 @@ import DelivererDashBoard from '@/Components/DelivererDashBoard';
 const Home = () => {
   
   return (
-   <DelivererDashBoard />
+    <div>
+     <DelivererDashBoard />
+     <div>
+      
+     </div>
+   </div>
   );
 };
 

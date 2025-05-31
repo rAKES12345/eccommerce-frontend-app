@@ -1,21 +1,25 @@
-"use client"
-import axios from 'axios';
-import { useRouter } from 'next/navigation';
+'use client';
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { AiFillEye, AiFillEyeInvisible } from 'react-icons/ai';
+import { useAuth } from '@/context/AuthContext';
+import Popup from '@/Components/Popup';
 
 export default function Register() {
-  const router=useRouter();
+  const router = useRouter();
+  const { register } = useAuth();
+
   const [formData, setFormData] = useState({
     name: '',
     email: '',
-    mobile: '',
     password: '',
   });
+
+  const [popupMessage, setPopupMessage] = useState(null);
   const [passwordVisible, setPasswordVisible] = useState(false);
 
   const togglePasswordVisibility = () => {
-    setPasswordVisible((prevState) => !prevState);
+    setPasswordVisible((prev) => !prev);
   };
 
   const handleChange = (e) => {
@@ -24,19 +28,18 @@ export default function Register() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    try{
-      const res=await axios.post("http://localhost:9091/user/register",formData);
-      if(res.status==200 && res.data=="Registration success !"){
-        router.push("/login");
-      }
-    }catch(e){
-      console.log(e);
+    try {
+      await register(formData.name, formData.email, formData.password);
+    } catch (err) {
+      setPopupMessage(err.message || 'Registration failed');
     }
-    console.log(formData);
   };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-green-100 to-blue-200">
+      {popupMessage && (
+        <Popup message={popupMessage} onClose={() => setPopupMessage(null)} />
+      )}
       <form
         onSubmit={handleSubmit}
         className="bg-white shadow-lg rounded-lg p-8 w-full max-w-md"
@@ -46,7 +49,7 @@ export default function Register() {
         </h2>
 
         <div className="mb-4">
-          <label htmlFor="username" className="block text-gray-700 font-medium mb-2">
+          <label htmlFor="name" className="block text-gray-700 font-medium mb-2">
             Username
           </label>
           <input
@@ -77,44 +80,32 @@ export default function Register() {
           />
         </div>
 
-        <div className="mb-4">
-          <label htmlFor="mobile" className="block text-gray-700 font-medium mb-2">
-            Mobile Number
-          </label>
-          <input
-            id="mobile"
-            name="mobile"
-            type="tel"
-            required
-            value={formData.mobile}
-            onChange={handleChange}
-            className="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-green-500"
-            placeholder="Enter your mobile number"
-          />
-        </div>
-
         <div className="mb-6 relative">
           <label htmlFor="password" className="block text-gray-700 font-medium mb-2">
             Password
           </label>
-         <div>
-           <input
-            id="password"
-            name="password"
-            type={passwordVisible ? 'text' : 'password'}
-            required
-            value={formData.password}
-            onChange={handleChange}
-            className="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-green-500 pr-10"
-            placeholder="Enter your password"
-          />
-          <div
-            className="absolute inset-y-0 right-0 top-8 pr-3 flex items-center text-gray-500 cursor-pointer"
-            onClick={togglePasswordVisibility}
-          >
-            {passwordVisible ? <AiFillEyeInvisible size={20} /> : <AiFillEye size={20} />}
+          <div>
+            <input
+              id="password"
+              name="password"
+              type={passwordVisible ? 'text' : 'password'}
+              required
+              value={formData.password}
+              onChange={handleChange}
+              className="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-green-500 pr-10"
+              placeholder="Enter your password"
+            />
+            <div
+              className="absolute inset-y-0 right-0 top-8 pr-3 flex items-center text-gray-500 cursor-pointer"
+              onClick={togglePasswordVisibility}
+            >
+              {passwordVisible ? (
+                <AiFillEyeInvisible size={20} />
+              ) : (
+                <AiFillEye size={20} />
+              )}
+            </div>
           </div>
-         </div>
         </div>
 
         <button

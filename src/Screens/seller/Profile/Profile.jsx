@@ -37,7 +37,7 @@ const Profile = () => {
     const fetchUserData = async () => {
       setLoading(true);
       try {
-        const res = await axios.post("http://localhost:9091/seller/getsellerdetailsbyname", { name: userName });
+        const res = await axios.post("https://ecommerce-0zde.onrender.com/seller/getsellerdetailsbyname", { name: userName });
         const data = res.data;
 
         setUserData({
@@ -82,7 +82,7 @@ const Profile = () => {
     reader.onloadend = async () => {
       try {
         const base64Image = reader.result;
-        await axios.post("http://localhost:9091/seller/addprofile", {
+        await axios.post("https://ecommerce-0zde.onrender.com/seller/addprofile", {
           name: userName,
           image: base64Image,
         });

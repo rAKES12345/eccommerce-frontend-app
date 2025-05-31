@@ -28,7 +28,7 @@ export default function Register() {
     e.preventDefault();
     setError("");
     try {
-      const res = await axios.post("http://localhost:9091/deliverer/register", formData);
+      const res = await axios.post("https://ecommerce-0zde.onrender.com/deliverer/register", formData);
       if (res.data === "Registration successful") {
         router.push("/deliverer/login");
       } else {

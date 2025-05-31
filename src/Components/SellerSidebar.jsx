@@ -2,7 +2,7 @@
 import React from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { useRouter } from "next/navigation";
-import { useAuth } from "@/app/AuthContext";
+import { useAuth } from "@/context/AuthContext";
 
 const SellerSidebar = () => {
   const router = useRouter();

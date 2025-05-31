@@ -1,19 +1,18 @@
 "use client";
 
-import { useAuth } from "@/app/AuthContext";
+import { useSellerAuth } from "@/context/SellerAuthContext";
 import Popup from "@/Components/Popup";
-import axios from "axios";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { AiFillEye, AiFillEyeInvisible } from "react-icons/ai";
 
 export default function Login() {
   const router = useRouter();
-  const { login } = useAuth();
-
   const [passwordVisible, setPasswordVisible] = useState(false);
   const [formData, setFormData] = useState({ name: "", password: "" });
   const [popupMessage, setPopupMessage] = useState(null);
+
+  const { loginSeller } = useSellerAuth();
 
   const togglePasswordVisibility = () => {
     setPasswordVisible((prev) => !prev);
@@ -27,27 +26,9 @@ export default function Login() {
     e.preventDefault();
 
     try {
-      const res = await axios.post("http://localhost:9091/seller/login", formData);
-      const message = res?.data?.message || "";
-
-      if (res.status === 200 && message === "Login successful") {
-        // Login user with correct role
-        login({ name: formData.name, role: "seller" });
-
-        // Redirect to seller dashboard
-        router.push("/seller/home");
-      } else {
-        setPopupMessage(message || "Login failed");
-      }
+      await loginSeller(formData.name, formData.password);
     } catch (error) {
-      if (error.response?.status === 401) {
-        setPopupMessage(error.response.data?.message || "Invalid username or password");
-      } else if (error.response?.data?.message) {
-        setPopupMessage(error.response.data.message);
-      } else {
-        setPopupMessage("Something went wrong. Please try again.");
-      }
-      console.error("Login error:", error);
+      setPopupMessage(error.message || "Login failed");
     }
   };
 

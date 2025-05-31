@@ -9,9 +9,10 @@ import Navbar from "@/Components/Navbar";
 import Footer from "@/Components/Footer";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
-
-// Import AuthProvider and useAuth correctly depending on your AuthContext setup
-import AuthProvider, { useAuth } from "./AuthContext"; // <== default export + named export
+import { AuthProvider, useAuth } from "@/context/AuthContext";
+import { UserOperationsProvider } from "@/context/UserOperationsContext";
+import { SellerOperationsProvider } from "@/context/SellerOperationsContext";
+import { SellerAuthProvider } from "@/context/SellerAuthContext"; // Corrected here
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -28,7 +29,13 @@ export default function RootLayout({ children }) {
     <html lang="en">
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <AuthProvider>
-          <ClientWrapper>{children}</ClientWrapper>
+          <SellerAuthProvider>
+            <UserOperationsProvider>
+              <SellerOperationsProvider>
+                <ClientWrapper>{children}</ClientWrapper>
+              </SellerOperationsProvider>
+            </UserOperationsProvider>
+          </SellerAuthProvider>
         </AuthProvider>
       </body>
     </html>
@@ -55,13 +62,13 @@ function ClientWrapper({ children }) {
     <>
       {showDefaultNavbar && <Navbar />}
       {isSeller && <SellerNavbar />}
-      {isDeliverer && <SellerNavbar />} {/* Replace with DelivererNavbar if available */}
+      {isDeliverer && <SellerNavbar />} 
 
       <div className="d-flex">
         {isSeller && <SellerSidebar />}
         {isDeliverer && <DelivererSidebar />}
         <div className="flex-grow-1 w-100">
-          <div className="">{children}</div>
+          <div>{children}</div>
         </div>
       </div>
 

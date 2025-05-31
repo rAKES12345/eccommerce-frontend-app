@@ -1,50 +1,37 @@
 "use client";
 import React, { useState, useEffect } from "react";
+import Cookies from "js-cookie";
 import Popup from "./Popup";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { useRouter } from "next/navigation";
 import Spinner from "./Spinner";
-import axios from "axios";
-import { useAuth } from "@/app/AuthContext";
+import { useAuth } from "@/context/AuthContext";
+import { useUserOperations } from "@/context/UserOperationsContext";
 
 const Item = ({ products }) => {
-  const [cartIds, setCartIds] = useState(new Set());
-  const [userName, setUserName] = useState("");
-  const [role, setRole] = useState("");
   const [showPopup, setShowPopup] = useState(false);
   const [popupMessage, setPopupMessage] = useState("");
   const router = useRouter();
+  const { searchItem } = useAuth();
 
-  const { searchItem, setSearchItem } = useAuth();
+  const {
+    cartIds,
+    setCartIds,      // now available
+    fetchCartItems,
+    addToCartMethod,
+  } = useUserOperations();
 
   useEffect(() => {
-    const name = localStorage.getItem("userName");
-    const roleValue = localStorage.getItem("role");
-    if (name && roleValue) {
-      setUserName(name);
-      setRole(roleValue);
+    const cookieUser = Cookies.get("user");
+    if (cookieUser) {
+      try {
+        const parsed = JSON.parse(cookieUser);
+        fetchCartItems(parsed.username);
+      } catch (err) {
+        console.error("Invalid cookie user data:", err);
+      }
     }
   }, []);
-
-  useEffect(() => {
-    if (!userName || !role) return;
-
-    const fetchCartItems = async () => {
-      try {
-        const response = await axios.post("http://localhost:9091/cart/userscarts", {
-          name: userName,
-        });
-        const itemIds = response.data;
-        if (Array.isArray(itemIds)) {
-          setCartIds(new Set(itemIds.map(String)));
-        }
-      } catch (error) {
-        console.error("Error fetching cart details:", error);
-      }
-    };
-
-    fetchCartItems();
-  }, [userName, role]);
 
   const showPopupMessage = (message) => {
     setPopupMessage(message);
@@ -53,24 +40,29 @@ const Item = ({ products }) => {
   };
 
   const addToCart = async (product) => {
-    if (!userName || !role) {
+    const cookieUser = Cookies.get("user");
+    if (!cookieUser) {
       router.push("/login");
       return;
     }
 
+    // userName comes from cookie, but addToCartMethod uses context's userName so this is optional here
     if (cartIds.has(String(product.id))) {
       showPopupMessage("Product already in cart");
       return;
     }
 
     try {
-      await axios.post("http://localhost:9091/cart/add", {
-        name: userName,
-        itemId: product.id,
-      });
-
-      setCartIds((prev) => new Set(prev).add(String(product.id)));
-      showPopupMessage("Added to cart");
+      // Call addToCartMethod with product id only
+      const result = await addToCartMethod(product.id);
+      console.log("add to cart method called");
+      if (result.success) {
+        // The context method already updates cartIds, but you can keep this if you want to be safe
+        setCartIds((prev) => new Set(prev).add(String(product.id)));
+        showPopupMessage("Added to cart");
+      } else {
+        showPopupMessage(result.message || "Failed to add product");
+      }
     } catch (e) {
       console.error(e);
       showPopupMessage("Failed to add product");
@@ -79,7 +71,6 @@ const Item = ({ products }) => {
 
   const handleProductClick = (product) => {
     if (product.stock <= 0) return;
-
     localStorage.setItem("selectedProduct", JSON.stringify(product));
     router.push(`/product`);
   };
@@ -88,7 +79,6 @@ const Item = ({ products }) => {
     return <Spinner />;
   }
 
-  // ✅ Filter products based on searchItem
   const filteredProducts = products.filter((product) => {
     if (!searchItem || searchItem.trim() === "") return true;
     const query = searchItem.toLowerCase();
@@ -105,7 +95,6 @@ const Item = ({ products }) => {
       {showPopup && (
         <Popup title="Cart" message={popupMessage} onClose={() => setShowPopup(false)} />
       )}
-
       <div className="row g-4">
         {filteredProducts.map((product, index) => {
           const isInCart = cartIds.has(String(product.id));
@@ -151,7 +140,6 @@ const Item = ({ products }) => {
                       {isOutOfStock ? "Out of Stock" : "Available"}
                     </span>
                   </p>
-
                   <p className="text-muted small mb-3 flex-grow-1">
                     {product.description?.length > 70
                       ? product.description.slice(0, 70) + "..."
@@ -161,11 +149,10 @@ const Item = ({ products }) => {
                   <div className="d-flex justify-content-between align-items-center mt-auto">
                     <div>
                       <span className="badge bg-primary px-3 py-2 fs-6">
-                        ${product.price.toFixed(2)}
+                        ₹{product.price.toFixed(2)}
                       </span>
                       <div className="small text-muted mt-1">⭐ {product.rating}</div>
                     </div>
-
                     <button
                       className={`btn btn-sm rounded-pill px-3 ${
                         isInCart

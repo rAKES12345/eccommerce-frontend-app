@@ -19,7 +19,7 @@ const Products = () => {
         if (!username) throw new Error("User not logged in");
 
         const sellerRes = await axios.post(
-          "http://localhost:9091/item/getselleridbyname",
+          "https://ecommerce-0zde.onrender.com/item/getselleridbyname",
           { name: username },
           { headers: { "Content-Type": "application/json" } }
         );
@@ -30,7 +30,7 @@ const Products = () => {
         setSellerId(id);
 
         const productsRes = await axios.post(
-          "http://localhost:9091/item/getitemsbysellerid",
+          "https://ecommerce-0zde.onrender.com/item/getitemsbysellerid",
           { sellerId: id },
           { headers: { "Content-Type": "application/json" } }
         );
@@ -56,7 +56,7 @@ const Products = () => {
     try {
       const storedSellerId = sellerId || localStorage.getItem("sellerId");
 
-      const res = await axios.delete("http://localhost:9091/item/delete", {
+      const res = await axios.delete("https://ecommerce-0zde.onrender.com/item/delete", {
         data: { id: productId, sellerId: storedSellerId },
         headers: { "Content-Type": "application/json" },
       });

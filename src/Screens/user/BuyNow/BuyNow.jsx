@@ -1,74 +1,47 @@
 "use client";
-import React, { useEffect, useState } from 'react';
-import 'bootstrap/dist/css/bootstrap.min.css';
-import Navbar from '@/Components/Navbar';
-import Footer from '@/Components/Footer';
-import axios from 'axios';
-import SuccessPopUp from '@/Components/SuccessPopUp';
-import { useRouter } from 'next/navigation';
+import React, { useEffect } from "react";
+import "bootstrap/dist/css/bootstrap.min.css";
+import Navbar from "@/Components/Navbar";
+import Footer from "@/Components/Footer";
+import SuccessPopUp from "@/Components/SuccessPopUp";
+import { useUserOperations } from "@/context/UserOperationsContext";
 
 const BuyNow = () => {
-  const [product, setProduct] = useState(null);
-  const router=useRouter();
-  const [order, setOrder] = useState({
-    itemId: "",
-    name: "",
-    address: "",
-    sellerId: "",
-    paymentMethod: "Cash on Delivery",
-  });
-  const [showSuccessPopup, setShowSuccessPopup] = useState(false);
+  const {
+    product,
+    order,
+    fetchItemData,
+    buyNow,
+    updateOrder,
+  } = useUserOperations();
 
   useEffect(() => {
-    const fetchItemData = async () => {
-      try {
-        const id = localStorage.getItem("buyNowProductId");
-        if (!id) return;
-
-        const res = await axios.post("http://localhost:9091/item/getitembyid", { id });
-        setProduct(res.data);
-        setOrder(prev => ({
-          ...prev,
-          itemId: res.data.id,
-          sellerId: res.data.sellerId
-        }));
-      } catch (e) {
-        console.log("Error fetching product:", e);
-      }
-    };
     fetchItemData();
   }, []);
 
   const imageSrc = product?.image
-    ? product.image.startsWith('data:')
+    ? product.image.startsWith("data:")
       ? product.image
       : `data:image/jpeg;base64,${product.image}`
     : "https://via.placeholder.com/120";
 
   const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setOrder(prev => ({ ...prev, [name]: value }));
+    updateOrder({ [e.target.name]: e.target.value });
   };
 
-  const buyNow = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
-    try {
-      const res = await axios.post("http://localhost:9091/order/add", order);
-      console.log("Order placed:", res.data);
-      setShowSuccessPopup(true);
-      setTimeout(() => setShowSuccessPopup(false), 3000);
-      router.push("/");
-    } catch (e) {
-      console.log("Order error:", e);
-      alert("Failed to place order.");
-    }
+    
+    buyNow(order); 
   };
 
   return (
     <div className="d-flex flex-column min-vh-100 bg-light">
       <main className="container py-5 flex-grow-1">
         <div className="card shadow-lg rounded-4 p-4">
-          <h2 className="mb-4 text-center text-primary fw-bold">Confirm Your Purchase</h2>
+          <h2 className="mb-4 text-center text-primary fw-bold">
+            Confirm Your Purchase
+          </h2>
           <div className="row g-4">
             {/* Product Summary */}
             <div className="col-md-6">
@@ -79,7 +52,7 @@ const BuyNow = () => {
                     src={imageSrc}
                     alt={product?.name || "Product"}
                     className="img-thumbnail"
-                    style={{ width: '120px', height: '120px', objectFit: 'cover' }}
+                    style={{ width: "120px", height: "120px", objectFit: "cover" }}
                   />
                   <div>
                     <p className="mb-1 fw-bold">{product?.name || "Loading..."}</p>
@@ -88,9 +61,15 @@ const BuyNow = () => {
                     <p className="mb-1 text-muted">Rating: {product?.rating || "N/A"}</p>
                     <p className="mb-1 text-muted">Stock: {product?.stock || "N/A"}</p>
                     <p className="mb-1 text-muted">Discount: {product?.discount || 0}%</p>
-                    <p className="mb-1 text-muted">Tags: {product?.tags?.join(", ") || "N/A"}</p>
-                    <p className="mb-1">{product?.description || "No description available."}</p>
-                    <h5 className="text-success mt-2">₹{product?.price?.toFixed(2) || "0.00"}</h5>
+                    <p className="mb-1 text-muted">
+                      Tags: {product?.tags?.join(", ") || "N/A"}
+                    </p>
+                    <p className="mb-1">
+                      {product?.description || "No description available."}
+                    </p>
+                    <h5 className="text-success mt-2">
+                      ₹{product?.price?.toFixed(2) || "0.00"}
+                    </h5>
                   </div>
                 </div>
               </div>
@@ -100,7 +79,7 @@ const BuyNow = () => {
             <div className="col-md-6">
               <div className="border rounded p-3 bg-white">
                 <h5 className="fw-semibold mb-3">Shipping Details</h5>
-                <form onSubmit={buyNow}>
+                <form onSubmit={handleSubmit}>
                   <div className="mb-3">
                     <label className="form-label">Full Name</label>
                     <input
@@ -147,8 +126,6 @@ const BuyNow = () => {
             </div>
           </div>
         </div>
-
-        <SuccessPopUp show={showSuccessPopup} onClose={() => setShowSuccessPopup(false)} />
       </main>
     </div>
   );

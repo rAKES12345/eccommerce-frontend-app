@@ -8,14 +8,15 @@ import {
 } from "react-icons/fa";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { useRouter } from "next/navigation";
-import { useAuth } from "@/app/AuthContext";
+import { useAuth } from "@/context/AuthContext";
 
 const Navbar = () => {
   const router = useRouter();
   const { user, searchItem, setSearchItem } = useAuth();
 
   const isLoggedIn = !!user;
-  const username = user?.name || "Guest";
+  const username = user?.username || "Guest";
+
 
   const [showMobileSearch, setShowMobileSearch] = useState(false);
 

@@ -1,7 +1,7 @@
 "use client";
 import React, { useEffect, useState } from "react";
-import axios from "axios";
 import "bootstrap/dist/css/bootstrap.min.css";
+import { useUserOperations } from "@/context/UserOperationsContext";
 
 const OrderDetails = () => {
   const [order, setOrder] = useState(null);
@@ -9,34 +9,24 @@ const OrderDetails = () => {
   const [seller, setSeller] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const loadOrderData = async () => {
-      const storedOrder = localStorage.getItem("orderData");
+  const { loadOrderData } = useUserOperations();
 
-      if (!storedOrder) {
+  useEffect(() => {
+    const fetchData = async () => {
+      const data = await loadOrderData();
+
+      if (!data || !data.order) {
         setLoading(false);
         return;
       }
 
-      const parsedOrder = JSON.parse(storedOrder);
-      setOrder(parsedOrder);
-
-      try {
-        const [itemRes, sellerRes] = await Promise.all([
-          axios.post("http://localhost:9091/item/getitembyid", { id: parsedOrder.itemId }),
-          axios.post("http://localhost:9091/seller/getsellerdetailsbyid", { id: parsedOrder.sellerId }),
-        ]);
-
-        setItem(itemRes.data);
-        setSeller(sellerRes.data);
-      } catch (err) {
-        console.error("Failed to fetch item or seller details", err);
-      } finally {
-        setLoading(false);
-      }
+      setOrder(data.order);
+      setItem(data.item);
+      setSeller(data.seller);
+      setLoading(false);
     };
 
-    loadOrderData();
+    fetchData();
   }, []);
 
   if (loading) {

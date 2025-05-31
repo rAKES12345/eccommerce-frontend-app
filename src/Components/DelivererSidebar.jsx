@@ -20,8 +20,13 @@ const DelivererSidebar = ({ setVisible }) => {
           </button>
         </li>
         <li className="nav-item mb-2">
-          <button className="nav-link text-white" onClick={() => router.push("/deliverer/assigned")}>
-            Assigned Deliveries
+          <button className="nav-link text-white" onClick={() => router.push("/deliverer/orders")}>
+            Orders
+          </button>
+        </li>
+        <li className="nav-item mb-2">
+          <button className="nav-link text-white" onClick={() => router.push("/deliverer/pendingdeliveries")}>
+            Pending Deliveries
           </button>
         </li>
         <li className="nav-item mb-2">
@@ -34,11 +39,7 @@ const DelivererSidebar = ({ setVisible }) => {
             Earnings Summary
           </button>
         </li>
-        <li className="nav-item">
-          <button className="nav-link text-white" onClick={() => router.push("/deliverer/profile")}>
-            Profile
-          </button>
-        </li>
+       
         <li className="nav-item">
           <button className="nav-link text-white" onClick={logout}>
             Logout
