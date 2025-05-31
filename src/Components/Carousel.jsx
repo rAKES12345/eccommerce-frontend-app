@@ -20,7 +20,6 @@ const Carousel = () => {
         alt="Banner"
         width={1200}
         height={500}
-        layout="responsive"  
         priority     
         />
     </div>
