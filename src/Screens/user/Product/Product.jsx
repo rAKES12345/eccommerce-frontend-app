@@ -63,6 +63,7 @@ const Product = () => {
   };
 
   const buyNow = (id) => {
+        setUserName(user.username);
     if (!userName) {
       router.push("/login");
     } else {
