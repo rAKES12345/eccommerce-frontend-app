@@ -34,7 +34,7 @@ const Navbar = () => {
         <div className="container-fluid d-flex align-items-center justify-content-between">
           {/* Brand */}
           <a className="navbar-brand fw-bold fs-4" href="/">
-            ShopEase
+            Synkart
           </a>
 
           {/* Mobile search toggle */}

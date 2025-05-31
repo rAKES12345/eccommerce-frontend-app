@@ -31,7 +31,7 @@ const BNavbar = () => {
     <>
       <nav className="navbar bg-light shadow-sm px-3 py-2">
   <div className="container-fluid d-flex flex-nowrap align-items-center justify-content-between">
-    <a className="navbar-brand fw-bold" href="/">ShopEase</a>
+    <a className="navbar-brand fw-bold" href="/">Synkart</a>
 
     <div className="d-flex align-items-center gap-2 mt-2 mt-md-0">
       {/* Search Icon */}

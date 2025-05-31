@@ -24,7 +24,7 @@ const SellerNavbar = () => {
     <nav className="navbar navbar-expand-lg navbar-light bg-white shadow-sm px-4" style={{ height: '60px' }}>
       <div className="container-fluid d-flex justify-content-between align-items-center">
         <a className="navbar-brand fw-bold fs-4" href="/" style={{ color: '#2c3e50' }}>
-          ShopEase
+          Synkart
         </a>
 
         <div

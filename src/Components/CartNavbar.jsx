@@ -39,7 +39,7 @@ const CartNavbar = () => {
     <>
       <nav className="navbar bg-light shadow-sm px-3 py-2">
         <div className="container-fluid d-flex flex-nowrap align-items-center justify-content-between">
-          <a className="navbar-brand fw-bold" href="/">ShopEase</a>
+          <a className="navbar-brand fw-bold" href="/">Synkart</a>
            {/* Desktop Search */}
                   <form
                     onSubmit={handleSearch}

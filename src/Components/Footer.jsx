@@ -8,8 +8,8 @@ const Footer = () => {
       <div className="container">
         <div className="row">
           <div className="col-md-4">
-            <h5 className="fw-bold mb-3">ShopEase</h5>
-            <p>ShopEase is your one-stop destination for the best products online. We strive to provide an exceptional shopping experience with easy navigation, secure payment methods, and fast delivery.</p>
+            <h5 className="fw-bold mb-3">Synkart</h5>
+            <p>Synkart is your one-stop destination for the best products online. We strive to provide an exceptional shopping experience with easy navigation, secure payment methods, and fast delivery.</p>
           </div>
 
           <div className="col-md-2">
@@ -35,7 +35,7 @@ const Footer = () => {
           <div className="col-md-3">
             <h5 className="fw-bold mb-3">Registered Office Address</h5>
             <p>
-              123 ShopEase Street,<br />
+              123 Synkart Street,<br />
               Business Park, City,<br />
               Country - 123456
             </p>
@@ -45,7 +45,7 @@ const Footer = () => {
 
       {/* Footer Bottom */}
       <div className="bg-dark text-center text-light py-3 mt-4">
-        <p className="mb-0">© 2025 ShopEase. All Rights Reserved.</p>
+        <p className="mb-0">© 2025 Synkart. All Rights Reserved.</p>
       </div>
     </div>
   );
