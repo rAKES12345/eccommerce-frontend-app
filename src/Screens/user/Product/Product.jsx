@@ -20,7 +20,6 @@ const Product = () => {
 
   // Load product from localStorage once on mount if not already loaded
   useEffect(() => {
-    setUserName(user.username);
     if (product) return; // Already loaded by context
     const data = localStorage.getItem("selectedProduct");
     if (data) {
@@ -50,6 +49,8 @@ const Product = () => {
     if (!userName) {
       router.push("/login");
       return;
+    }else{
+    setUserName(user.username);
     }
 
     const result = await addToCartMethod(id);
