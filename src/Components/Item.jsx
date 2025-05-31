@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import Spinner from "./Spinner";
 import { useAuth } from "@/context/AuthContext";
 import { useUserOperations } from "@/context/UserOperationsContext";
+import LoadingSkeleton from "./LoadingSkeleton";
 
 const Item = ({ products }) => {
   const [showPopup, setShowPopup] = useState(false);
@@ -75,9 +76,7 @@ const Item = ({ products }) => {
     router.push(`/product`);
   };
 
-  if (!Array.isArray(products) || products.length === 0) {
-    return <Spinner />;
-  }
+  const isLoading = !Array.isArray(products) || products.length === 0;
 
   const filteredProducts = products.filter((product) => {
     if (!searchItem || searchItem.trim() === "") return true;
@@ -96,7 +95,9 @@ const Item = ({ products }) => {
         <Popup title="Cart" message={popupMessage} onClose={() => setShowPopup(false)} />
       )}
       <div className="row g-4">
-        {filteredProducts.map((product, index) => {
+        {isLoading
+          ? Array.from({ length: 8 }).map((_, idx) => <LoadingSkeleton key={idx} />)
+          : filteredProducts.map((product, index) => {
           const isInCart = cartIds.has(String(product.id));
           const discount = product.discount ? `${product.discount}% OFF` : null;
           const isOutOfStock = product.stock <= 0;

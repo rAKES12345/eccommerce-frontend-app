@@ -8,24 +8,20 @@ import Spinner from "@/Components/Spinner";
 import Popup from "@/Components/Popup";
 import { useRouter } from "next/navigation";
 import { useUserOperations } from "@/context/UserOperationsContext";
-import { AuthContext, useAuth } from "@/context/AuthContext";
+import { useAuth } from "@/context/AuthContext";
 
 const Product = () => {
-  const { product, setProduct,  cartIds, addToCartMethod } = useUserOperations();
-  const {user}=useAuth();
-
+  const { product, setProduct, cartIds, addToCartMethod } = useUserOperations();
+  const { user } = useAuth();
   const [showPopup, setShowPopup] = useState(false);
   const router = useRouter();
-  const [userName,setUserName]=useState("");
 
-  // Load product from localStorage once on mount if not already loaded
   useEffect(() => {
-    if (product) return; // Already loaded by context
+    if (product) return;
     const data = localStorage.getItem("selectedProduct");
     if (data) {
       try {
         const parsed = JSON.parse(data);
-        // sanitize rating between 0 and 5, fallback 0 if invalid
         parsed.rating = Math.max(0, Math.min(5, parseFloat(parsed.rating) || 0));
         setProduct(parsed);
       } catch (err) {
@@ -34,7 +30,6 @@ const Product = () => {
     }
   }, [product, setProduct]);
 
-  // Check if product is in cart
   const isInCart = product ? cartIds.has(String(product.id)) : false;
 
   const getDiscountedPrice = () => {
@@ -46,11 +41,9 @@ const Product = () => {
   };
 
   const handleAddToCart = async (id) => {
-    if (!userName) {
+    if (!user) {
       router.push("/login");
       return;
-    }else{
-    setUserName(user.username);
     }
 
     const result = await addToCartMethod(id);
@@ -63,8 +56,7 @@ const Product = () => {
   };
 
   const buyNow = (id) => {
-        setUserName(user.username);
-    if (!userName) {
+    if (!user) {
       router.push("/login");
     } else {
       localStorage.setItem("buyNowProductId", id);
@@ -108,7 +100,7 @@ const Product = () => {
                   Rating: <strong>{product.rating} / 5</strong> | Stock: <strong>{product.stock}</strong>
                 </p>
 
-                <div className="text-warning fs-5 mb-3" aria-label={`Rating: ${product.rating} out of 5 stars`}>
+                <div className="text-warning fs-5 mb-3">
                   {"★".repeat(Math.floor(product.rating))}
                   {"☆".repeat(5 - Math.floor(product.rating))}
                 </div>
@@ -126,7 +118,6 @@ const Product = () => {
                             width: "25px",
                             height: "25px",
                           }}
-                          aria-label={`Color option ${color}`}
                         />
                       ))}
                     </div>
@@ -136,7 +127,7 @@ const Product = () => {
                 {product.sizes?.length > 0 && (
                   <>
                     <p className="mb-1 text-muted">Sizes:</p>
-                    <select className="form-select w-auto mb-3" aria-label="Select size">
+                    <select className="form-select w-auto mb-3">
                       {product.sizes.map((size, idx) => (
                         <option key={idx} value={size}>
                           {size}
@@ -183,8 +174,6 @@ const Product = () => {
                       <button
                         className="btn btn-outline-secondary px-4 rounded-3 shadow-sm"
                         disabled
-                        aria-disabled="true"
-                        aria-label="Product already in cart"
                       >
                         In Cart
                       </button>
@@ -192,7 +181,6 @@ const Product = () => {
                       <button
                         className="btn btn-success px-4 rounded-3 shadow-sm"
                         onClick={() => handleAddToCart(product.id)}
-                        aria-label="Add product to cart"
                       >
                         Add to Cart +
                       </button>
@@ -200,7 +188,6 @@ const Product = () => {
                     <button
                       className="btn btn-primary px-4 rounded-3 shadow-sm"
                       onClick={() => buyNow(product.id)}
-                      aria-label="Buy now"
                     >
                       Buy Now
                     </button>

@@ -1,10 +1,12 @@
 "use client";
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import Navbar from "@/Components/Navbar";
 import Footer from "@/Components/Footer";
 import SuccessPopUp from "@/Components/SuccessPopUp";
 import { useUserOperations } from "@/context/UserOperationsContext";
+import { useAuth } from "@/context/AuthContext";
+import { useRouter } from "next/navigation";
 
 const BuyNow = () => {
   const {
@@ -15,9 +17,18 @@ const BuyNow = () => {
     updateOrder,
   } = useUserOperations();
 
+  const { user } = useAuth();
+  const router = useRouter();
+
+  const [showPopup, setShowPopup] = useState(false);
+
   useEffect(() => {
-    fetchItemData();
-  }, []);
+    if (!user) {
+      router.push("/login");
+    } else {
+      fetchItemData();
+    }
+  }, [user]);
 
   const imageSrc = product?.image
     ? product.image.startsWith("data:")
@@ -29,15 +40,38 @@ const BuyNow = () => {
     updateOrder({ [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    
-    buyNow(order); 
+
+    if (!user) {
+      router.push("/login");
+      return;
+    }
+
+    try {
+      await buyNow(order);
+      setShowPopup(true);
+
+      // Optional: Redirect after a short delay
+      setTimeout(() => {
+        router.push("/orders"); // or home page
+      }, 3000);
+    } catch (error) {
+      console.error("Order failed:", error);
+      alert("Something went wrong. Please try again.");
+    }
   };
 
   return (
     <div className="d-flex flex-column min-vh-100 bg-light">
       <main className="container py-5 flex-grow-1">
+        {showPopup && (
+          <SuccessPopUp
+            message="Order placed successfully!"
+            onClose={() => setShowPopup(false)}
+          />
+        )}
+
         <div className="card shadow-lg rounded-4 p-4">
           <h2 className="mb-4 text-center text-primary fw-bold">
             Confirm Your Purchase
