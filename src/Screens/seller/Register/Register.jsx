@@ -1,11 +1,12 @@
 "use client";
-import axios from "axios";
+import { useSellerAuth } from "@/context/SellerAuthContext";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { AiFillEye, AiFillEyeInvisible } from "react-icons/ai";
 
 export default function Register() {
   const router = useRouter();
+  const { registerSeller } = useSellerAuth();
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -26,19 +27,11 @@ export default function Register() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
+
     try {
-      const res = await axios.post("https://ecommerce-0zde.onrender.com/seller/register", formData);
-      if (res.data.message === "Registered successfully") {
-        router.push("/seller/login");
-      } else {
-        setError(res.data.message);
-      }
+      await registerSeller(formData); // Will handle redirection inside
     } catch (err) {
-      if (err.response && err.response.data && err.response.data.message) {
-        setError(err.response.data.message);
-      } else {
-        setError("Something went wrong. Please try again.");
-      }
+      setError(err.message); // Show error from context
     }
   };
 
@@ -123,11 +116,7 @@ export default function Register() {
             className="absolute right-3 top-1/2 transform -translate-y-1/2 cursor-pointer text-gray-500"
             onClick={togglePasswordVisibility}
           >
-            {passwordVisible ? (
-              <AiFillEyeInvisible size={20} />
-            ) : (
-              <AiFillEye size={20} />
-            )}
+            {passwordVisible ? <AiFillEyeInvisible size={20} /> : <AiFillEye size={20} />}
           </div>
         </div>
 
@@ -139,17 +128,16 @@ export default function Register() {
         </button>
 
         <div className="mt-4 text-center">
-        <p className="text-gray-600">Already have an account?</p>
-        <button
-          onClick={() => router.push("/seller/login")}
-          className="mt-2 inline-block text-indigo-600 hover:underline font-medium"
-        >
-          Login here
-        </button>
-      </div>
+          <p className="text-gray-600">Already have an account?</p>
+          <button
+            onClick={() => router.push("/seller/login")}
+            type="button"
+            className="mt-2 inline-block text-indigo-600 hover:underline font-medium"
+          >
+            Login here
+          </button>
+        </div>
       </form>
-
-      
     </div>
   );
 }

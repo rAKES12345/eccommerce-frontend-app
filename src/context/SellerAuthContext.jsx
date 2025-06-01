@@ -5,26 +5,30 @@ import Cookies from 'js-cookie';
 import axios from 'axios';
 import { useRouter } from 'next/navigation';
 
-export const SellerAuthContext = createContext();
-
 const baseUrl = 'https://ecommerce-0zde.onrender.com';
+export const SellerAuthContext = createContext();
 
 export const SellerAuthProvider = ({ children }) => {
   const router = useRouter();
   const [seller, setSeller] = useState(null);
   const [token, setToken] = useState(null);
+  const [isLoaded, setIsLoaded] = useState(false);
 
   useEffect(() => {
     const savedToken = Cookies.get('sellerToken');
     const savedSeller = Cookies.get('sellerUser');
+
     if (savedToken && savedSeller) {
-      setToken(savedToken);
       try {
-        setSeller(JSON.parse(savedSeller));
+        const parsedSeller = JSON.parse(savedSeller);
+        setToken(savedToken);
+        setSeller(parsedSeller);
       } catch (e) {
-        console.warn("Failed to parse seller cookie:", e);
+        console.warn('Failed to parse seller cookie:', e);
       }
     }
+
+    setIsLoaded(true);
   }, []);
 
   const loginSeller = async (name, password) => {
@@ -33,25 +37,32 @@ export const SellerAuthProvider = ({ children }) => {
       const { token, seller } = res.data;
 
       Cookies.set('sellerToken', token, { expires: 7 });
-      Cookies.set('sellerUser', JSON.stringify(seller), { expires: 7 });
+      Cookies.set('sellerUser', JSON.stringify({ username: name, role: 'seller' }), { expires: 7 });
 
       setToken(token);
-      setSeller(seller);
+      setSeller({ ...seller, role: 'seller' });
+
       router.push('/seller/home');
     } catch (error) {
       throw new Error(error.response?.data?.error || error.message);
     }
   };
 
-  const registerSeller = async (name, email, password) => {
+  const registerSeller = async (formData) => {
     try {
-      const res = await axios.post(`${baseUrl}/seller/register`, { name, email, password });
-      router.push('/seller/login');
-      return res.data.message || 'Seller registration successful!';
-    } catch (error) {
-      throw new Error(
-        error.response?.data?.error || error.response?.data?.message || error.message
-      );
+      const res = await axios.post(`${baseUrl}/seller/register`, formData);
+
+      if (res.data.message === "Registered successfully") {
+        router.push("/seller/login");
+      } else {
+        throw new Error(res.data.message);
+      }
+    } catch (err) {
+      if (err.response?.data?.message) {
+        throw new Error(err.response.data.message);
+      } else {
+        throw new Error("Something went wrong. Please try again.");
+      }
     }
   };
 
@@ -67,8 +78,10 @@ export const SellerAuthProvider = ({ children }) => {
   const logoutSeller = () => {
     Cookies.remove('sellerToken');
     Cookies.remove('sellerUser');
+
     setSeller(null);
     setToken(null);
+
     router.push('/');
   };
 
@@ -81,6 +94,7 @@ export const SellerAuthProvider = ({ children }) => {
         registerSeller,
         logoutSeller,
         getSellerDetails,
+        isLoaded,
       }}
     >
       {children}

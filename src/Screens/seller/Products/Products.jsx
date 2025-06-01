@@ -1,95 +1,43 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import axios from "axios";
 import SellerNavbar from "@/Components/SellerNavbar";
 import SellerSidebar from "@/Components/SellerSidebar";
+import { useSellerOperations } from "@/context/SellerOperationsContext";
 
 const NAVBAR_HEIGHT = 60;
 
 const Products = () => {
-  const [sellerId, setSellerId] = useState("");
-  const [products, setProducts] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const {
+    sellerId,
+    products,
+    loading,
+    error,
+    fetchSellerIdAndProducts,
+    handleDelete,
+    setProducts, // Optional: if needed to update after delete
+  } = useSellerOperations();
 
   useEffect(() => {
-    const fetchSellerIdAndProducts = async () => {
-      try {
-        const username = localStorage.getItem("userName");
-        if (!username) throw new Error("User not logged in");
-
-        const sellerRes = await axios.post(
-          "https://ecommerce-0zde.onrender.com/item/getselleridbyname",
-          { name: username },
-          { headers: { "Content-Type": "application/json" } }
-        );
-
-        const id = sellerRes.data.sellerId;
-        if (!id) throw new Error("Seller ID not found");
-
-        setSellerId(id);
-
-        const productsRes = await axios.post(
-          "https://ecommerce-0zde.onrender.com/item/getitemsbysellerid",
-          { sellerId: id },
-          { headers: { "Content-Type": "application/json" } }
-        );
-
-        setProducts(productsRes.data || []);
-        setLoading(false);
-      } catch (err) {
-        console.error(err);
-        setError(err.message || "Error fetching products");
-        setLoading(false);
-      }
-    };
-
     fetchSellerIdAndProducts();
   }, []);
 
-  const handleDelete = async (productId) => {
-    const confirmDelete = window.confirm(
-      "Are you sure you want to delete this product?"
-    );
-    if (!confirmDelete) return;
-
-    try {
-      const storedSellerId = sellerId || localStorage.getItem("sellerId");
-
-      const res = await axios.delete("https://ecommerce-0zde.onrender.com/item/delete", {
-        data: { id: productId, sellerId: storedSellerId },
-        headers: { "Content-Type": "application/json" },
-      });
-
-      alert(res.data);
-
-      setProducts((prev) =>
-        prev.filter((p) => p.id !== productId && p._id !== productId)
-      );
-    } catch (err) {
-      console.error("Error deleting product:", err);
-      alert("Failed to delete product. Try again later.");
-    }
-  };
-
+ 
   return (
     <div>
-      
-
       <div
         className="d-flex"
         style={{
           height: `calc(100vh - ${NAVBAR_HEIGHT}px)`,
         }}
       >
-       
         <main
           className="container mt-4 flex-grow-1"
           style={{
             overflowY: "auto",
             maxHeight: `calc(100vh - ${NAVBAR_HEIGHT}px)`,
             scrollbarWidth: "none",
-            msOverflowStyle: "none",  
+            msOverflowStyle: "none",
           }}
         >
           <h2>Products</h2>

@@ -2,15 +2,14 @@
 import React from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { useRouter } from "next/navigation";
-import { useAuth } from "@/context/AuthContext";
+import { useSellerAuth } from "@/context/SellerAuthContext";
 
 const SellerSidebar = () => {
   const router = useRouter();
-  const { logout } = useAuth();
+  const { logoutSeller } = useSellerAuth();
 
   const handleLogout = () => {
-    logout(); // clear user + role from context/localStorage
-    router.push("/"); // redirect to home
+    logoutSeller(); // clear user + role from context/localStorage
   };
 
   return (
