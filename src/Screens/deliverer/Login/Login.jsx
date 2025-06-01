@@ -2,14 +2,14 @@
 
 import { useAuth } from '@/app/AuthContext';
 import Popup from '@/Components/Popup';
-import axios from 'axios';
+import { useDelivererAuth } from '@/context/DelivererAuthContext';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { AiFillEye, AiFillEyeInvisible } from 'react-icons/ai';
 
 export default function Login() {
   const router = useRouter();
-  const { login } = useAuth();
+  const { loginDeliverer } = useDelivererAuth();
 
   const [passwordVisible, setPasswordVisible] = useState(false);
   const [formData, setFormData] = useState({ name: '', password: '' });
@@ -26,24 +26,7 @@ export default function Login() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    try {
-      const res = await axios.post("https://ecommerce-0zde.onrender.com/deliverer/login", formData);
-      const message = res?.data|| "";
-
-      if (res.status === 200 && message === "Welcome "+formData.name) {
-        login({ name: formData.name, role: "deliverer" });
-        localStorage.setItem("isLoggedIn", "true");
-        localStorage.setItem("userName", formData.name);
-        localStorage.setItem("role", "deliverer");
-        router.push("/deliverer/home");
-      } else {
-        setPopupMessage(message || "Login failed");
-      }
-    } catch (error) {
-      const errMsg = error.response?.data?.message || "Something went wrong. Please try again.";
-      setPopupMessage(errMsg);
-      console.error("Login error:", error);
-    }
+    loginDeliverer(formData.name,formData.password);
   };
 
   return (

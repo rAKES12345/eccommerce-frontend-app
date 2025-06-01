@@ -12,6 +12,7 @@ import { AuthProvider, useAuth } from '@/context/AuthContext';
 import { UserOperationsProvider } from '@/context/UserOperationsContext';
 import { SellerOperationsProvider } from '@/context/SellerOperationsContext';
 import { SellerAuthProvider, useSellerAuth } from '@/context/SellerAuthContext';
+import { DelivererAuthProvider, useDelivererAuth } from '@/context/DelivererAuthContext';
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -31,7 +32,9 @@ export default function RootLayout({ children }) {
           <SellerAuthProvider>
             <UserOperationsProvider>
               <SellerOperationsProvider>
+                <DelivererAuthProvider>
                 <ClientWrapper>{children}</ClientWrapper>
+                </DelivererAuthProvider>
               </SellerOperationsProvider>
             </UserOperationsProvider>
           </SellerAuthProvider>
@@ -44,6 +47,7 @@ export default function RootLayout({ children }) {
 function ClientWrapper({ children }) {
   const { user } = useAuth();
   const { seller, isLoaded: isSellerLoaded } = useSellerAuth();
+  const { deliverer, isLoaded: isDelivererLoaded } = useDelivererAuth();
   const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
@@ -51,14 +55,15 @@ function ClientWrapper({ children }) {
   }, []);
 
   // Wait for hydration and seller context initialization
-  if (!isMounted || !isSellerLoaded) return null;
+  if (!isMounted || !isSellerLoaded || !isDelivererLoaded) return null;
 
   console.log("seller",seller)
   const sellerRole = seller?.role?.toLowerCase();
+  const delivererRole = deliverer?.role?.toLowerCase();
   const userRole = user?.role?.toLowerCase();
 
   const isSeller = sellerRole === 'seller';
-  const isDeliverer = userRole === 'deliverer';
+ const isDeliverer = delivererRole === 'deliverer';
   const isUser = !userRole || userRole === 'user';
 
   return (
